@@ -1,0 +1,7 @@
+# 依存パッケージ管理ファイル
+Django==6.0.1 # 最新のLTS版
+django-bootstrap5==26.1
+mysqlclient==2.2.7
+python-dotenv==1.1.1
+python-dateutil>=2.9.0.post0
+requests==2.32.3
