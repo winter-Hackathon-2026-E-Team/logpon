@@ -2,14 +2,59 @@
 2026冬Eチームの開発リポジトリです。アプリ名はログポンです。
 
 ## 開発環境
+
+- Python 3.14 # 最新のLTSバージョン
+- Django 6.0.1 # 最新のLTSバージョン
+- MySQL 8.4 # AWS RDS MySQLのLTS(8.4)と整合
+- Bootstrap5 26.1 # Djangoと互換性のある最新版
+
+## ディレクトリ・ファイル構成
+本プロジェクトのディレクトリ・ファイル構成を以下のとおり示す。
 ```
-Python 3.14 # 最新のLTSバージョン
-Django 6.0.1 # 最新のLTSバージョン
-MySQL 8.4 # AWS RDS MySQLのLTS(8.4)と整合
-Bootstrap5 26.1 # Djangoと互換性のある最新版
+└── プロジェクト名
+    ├── src                                   # ソースディレクトリ
+    │   ├── apps                              # バックエンドディレクトリ
+    │   │   ├── (core)                        # 任意(共通動作ディレクトリ)
+    │   │   └── (your_app)                    # 任意
+    │   ├── templates                         # テンプレートディレクトリ
+    │   │   └── (your_html)                   # 任意
+    │   ├── static                            # 静的ファイルディレクトリ
+    │   │   ├── img                           # 画像ディレクトリ
+    │   │   │   └── (your_img)                # 任意
+    │   │   ├── css                           # CSSディレクトリ
+    │   │   │   └── (your_css)                # 任意
+    │   │   └── js                            # JavaScriptディレクトリ
+    │   │       └── (your_js)                 # 任意
+    │   ├── config                            # プロジェクト設定ディレクトリ
+    │   │   ├── __init__.py                   # パッケージ化のための空ファイル
+    │   │   ├── urls.py                       # プロジェクト全体のURL設定
+    │   │   ├── asgi.py                       # 非同期通信のための設定ファイル
+    │   │   ├── wsgi.py                       # 同期通信のための設定ファイル
+    │   │   └── settings                      # 環境設定ディレクトリ
+    │   │       ├── __init__.py               # パッケージ化のための空ファイル
+    │   │       ├── base.py                   # 全環境共通の設定
+    │   │       ├── dev.py                    # 開発環境専用の設定（例: DEBUG=True）
+    │   │       └── prod.py                   # 本番環境専用の設定（例: DEBUG=False, セキュリティ強化）
+    │   └── manage.py                         # Django管理ファイル
+    ├── docker                                # Dockerディレクトリ
+    │   ├── Dockerfile                        # Python(Django)のDockerイメージ
+    │   └── wait-for-it.sh                    # DB起動後にDjangoを開始するためのシェルスクリプト
+    ├── infra                               　# インフラディレクトリ
+    │   └── nginx                             # nginx用ディレクトリ
+    │   　      ├── Dockerfile                # nginxのDockerイメージ
+    │   　      └── nginx.conf                # nginxのconfファイル
+    ├── .dockerignore                         # Dockerビルド時の無視ファイルの設定
+    ├── .gitignore                            # GitHubにpushしないファイルの設定
+    ├── docker-compose.yml                    # Python(django)とDBの構成ファイル
+    ├── Makeflie                              # コマンド省略のための設定ファイル
+    ├── .env                                  # 開発用環境設定ファイル（Gitに含めない）
+    ├── .env.exapmle                          # 環境変数のテンプレート（ダミー値で共有）
+    ├── pull_request_template.md              # プロジェクトの説明ファイル
+    ├── README.md                             # プロジェクトの説明ファイル
+    └── requirements.txt                      # 依存関係ファイル
 ```
 
-##  起動手順
+##  起動/終了手順
 開発環境の起動から終了までの手順
 1) 環境変数ファイル.envの作成
 .env.exampleをコピーして、.envファイルをプロジェクトルートディレクトリ直下に保存する。
