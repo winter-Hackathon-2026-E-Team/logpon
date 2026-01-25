@@ -10,9 +10,26 @@ ARG GID=1000
 ARG USERNAME=appuser
 ARG GROUPNAME=appgroup
 
-# 非ルートユーザーの作成
-RUN groupadd --gid ${GID} ${GROUPNAME} && \
-    useradd --uid ${UID} --gid ${GID} --shell /bin/bash --create-home ${USERNAME}
+# 非ルートユーザーの作成（GID衝突を吸収）
+RUN set -eux; \
+    # 1) GID が既に存在するなら、その既存グループを使う（groupaddしない）
+    if getent group "${GID}" >/dev/null; then \
+        EXISTING_GROUP="$(getent group "${GID}" | cut -d: -f1)"; \
+        echo "GID ${GID} already exists as group '${EXISTING_GROUP}'. Skip groupadd."; \
+    else \
+        groupadd --gid "${GID}" "${GROUPNAME}"; \
+        echo "Created group '${GROUPNAME}' with GID ${GID}"; \
+    fi; \
+    \
+    # 2) UID が既に存在する場合は username の作成をスキップ/失敗させる（安全側）
+    if getent passwd "${UID}" >/dev/null; then \
+        EXISTING_USER="$(getent passwd "${UID}" | cut -d: -f1)"; \
+        echo "ERROR: UID ${UID} already exists as user '${EXISTING_USER}'. Choose a different UID."; \
+        exit 1; \
+    fi; \
+    \
+    # 3) user を作成（所属GIDは数値で指定するので、グループ名衝突に依存しない）
+    useradd --uid "${UID}" --gid "${GID}" --shell /bin/bash --create-home "${USERNAME}"
 
 # 作業ディレクトリの設定
 WORKDIR /src
