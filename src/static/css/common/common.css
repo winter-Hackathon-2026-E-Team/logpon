@@ -1,0 +1,70 @@
+/* ログイン前画面の幅と要素の並びを指定、marginとgapは各cssで指定 */
+.auth-wrapper {
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+/* buttonタグの場合は`border:none;`を各cssで指定 */
+.btn {
+    width: 388px;
+    height: 48px;
+    color: var(--color-text-main);
+    background-color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-size: 1.125rem;
+}
+
+.btn:hover {
+    opacity: 0.6;
+}
+
+/* auth-formのmarginのみ各cssで指定 */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-form label {
+    font-size: 14px;
+}
+
+.auth-form input {
+    width: 380px;
+    height: 38px;
+}
+
+/* プログラムを選択するプルダウンのデザイン */
+.program-select {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+}
+
+.program {
+    width: 405px;
+    height: 44px;
+    background-color: var(--color-primary);
+    border-radius: 5px;
+    border: none;
+    padding: 0 10px;
+}
+/* ここまで */
+
+/* タイマーのカードを共通化 */
+.oneTimer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 488px;
+    height: 53px;
+    box-sizing: border-box;
+    padding: 0 20px;
+    font-size: 1.25rem;
+    border: 1px solid var(--color-frame);
+    box-shadow: 2px 2px 4px var(--color-frame);
+}
