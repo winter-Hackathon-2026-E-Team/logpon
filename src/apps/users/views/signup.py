@@ -5,7 +5,7 @@ from django.http import HttpResponse
 # Create your views here.
 class SignupView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponse('<html lang="ja"><body><h1>signup_view</h1></body></html>')
+        return render(request, 'users/signup.html')
 
     def post(self, request, *args, **kwargs):
         pass

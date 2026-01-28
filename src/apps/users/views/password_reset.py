@@ -5,7 +5,7 @@ from django.http import HttpResponse
 # Create your views here.
 class PasswordResetView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponse('<html lang="ja"><body><h1>password_reset_view</h1></body></html>')
+        return render(request, 'users/password-reset.html')
 
     def post(self, request, *args, **kwargs):
         pass
