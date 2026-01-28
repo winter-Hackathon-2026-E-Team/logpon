@@ -10,9 +10,9 @@
 {% block content %}
 <div class="auth-wrapper">
 {% if user.is_authenticated %}
-    <a href="{% url 'runs:program-runs'}">
+    <a href="{% url 'runs:program-runs' %}">
 {% else %}
-    <a href="{% url 'users:login'}">
+    <a href="{% url 'users:login' %}">
 {% endif %}   
         <img src="{% static 'img/logpon_logo.png' %}" class="logo-img" alt="ログぽんロゴ">
     </a>
