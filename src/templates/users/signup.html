@@ -1,11 +1,66 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>signup</title>
-</head>
-<body>
-    <h1>signup</h1>
-</body>
-</html>
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}新規登録{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/users/signup.css' %}">
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'users:signup' %}">
+{% csrf_token %}
+
+    <div class="auth-wrapper">
+        <h2>新規登録</h2>
+
+        <div class="auth-form">
+            <label for="signup-email">メールアドレス</label>
+            <input type="email" name="email" id="signup-email"
+             class="{% if errors.email %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する -->
+
+            <p class="error-message">{{ errors.email }}</p>
+                        {% if errors.email %}
+            {% endif %}
+        </div>
+
+        <div class="auth-form">
+            <label for="signup-username">ユーザ名</label>
+            <input type="text" name="username" id="signup-username"
+             class="{% if errors.username %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する（ユーザ名はエラー必要ないかも） -->
+            
+            <p class="error-message">{{ errors.username }}</p>
+            {% if errors.username %}
+            {% endif %}
+        </div>
+
+        <div class="auth-form">
+            <label for="signup-password">パスワード</label>
+            <input type="password" name="password" id="signup-password"
+             class="{% if errors.password %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する -->
+            
+            <p class="error-message">{{ errors.password }}</p>
+            {% if errors.password %}
+            {% endif %}
+        </div>
+
+        <div class="auth-form">
+            <label for="signup-password-confirm">パスワード（確認用）</label>
+            <input type="password" name="password_confirm" id="signup-password-confirm"
+             class="{% if errors.password_confirm %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する -->
+            
+            <p class="error-message">{{ errors.password_confirm }}</p>
+            {% if errors.password_confirm %}
+            {% endif %}
+        </div>
+
+        <div>
+            <button class="btn" type="submit">新規登録</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
