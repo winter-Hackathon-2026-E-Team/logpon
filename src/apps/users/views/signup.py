@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from django.http import HttpResponse
+from ..forms.signup import SignUpForm
 
 # Create your views here.
 class SignupView(View):
@@ -8,6 +8,7 @@ class SignupView(View):
         return render(request, 'users/signup.html')
 
     def post(self, request, *args, **kwargs):
-        pass
+        form = SignUpForm(request.POST)
+        
 
 signup = SignupView.as_view()
