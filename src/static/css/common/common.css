@@ -30,12 +30,25 @@
 }
 
 .auth-form label {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .auth-form input {
     width: 380px;
     height: 38px;
+}
+
+/* .auth-formでエラーがあった場合の枠の着色 */
+.is-error {
+    border: solid 2px var(--color-warning);
+    border-radius: 5px;
+}
+
+.auth-form .error-message {
+    color: red;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 1px 0;
 }
 
 /* プログラムを選択するプルダウンのデザイン */

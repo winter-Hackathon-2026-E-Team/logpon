@@ -1,11 +1,44 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
-</head>
-<body>
-    <h1>login</h1>
-</body>
-</html>
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/users/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'users:login' %}">
+    {% csrf_token %}
+
+    <div class="auth-wrapper">
+        <h2>ログイン</h2>
+        
+        <div class="auth-form">
+            <label for="login-email">メールアドレス</label>
+            <input type="email" name="email" id="login-email" class="{% if errors.email %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する -->
+            {% if errors.email %}
+            <p class="error-message">{{ errors.email }}</p>
+            {% endif %}
+        </div>
+
+        <div class="auth-form">
+            <label for="login-password">パスワード</label>
+            <input type="password" name="password" id="login-password" class="{% if errors.email %}is-error{% endif %}" required>
+            <!-- エラーメッセージの仕様が決まったら編集する -->
+            {% if errors.password %}
+            <p class="error-message">{{ errors.password }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <button class="btn" type="submit">ログイン</button>
+        </div>
+
+        <p class="forgot-password">
+            <a href="{% url 'users:password-reset' %}">パスワードを忘れた場合はこちら</a>
+        </p>
+    </div>
+</form>
+{% endblock %}
