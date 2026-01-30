@@ -35,22 +35,22 @@
         </div>
 
         <div class="auth-form">
-            <label for="signup-password">パスワード</label>
-            <input type="password" name="password" id="signup-password"
-             class="{% if errors.password %}is-error{% endif %}" required>
+            <label for="signup-password1">パスワード</label>
+            <input type="password" name="password1" id="signup-password1"
+             class="{% if errors.password1 %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password %}            
-            <p class="error-message">{{ errors.password }}</p>
+            {% if errors.password1 %}            
+            <p class="error-message">{{ errors.password1 }}</p>
             {% endif %}
         </div>
 
         <div class="auth-form">
-            <label for="signup-password-confirm">パスワード（確認用）</label>
-            <input type="password" name="password_confirm" id="signup-password-confirm"
-             class="{% if errors.password_confirm %}is-error{% endif %}" required>
+            <label for="signup-password2">パスワード（確認用）</label>
+            <input type="password" name="password2" id="signup-password2"
+             class="{% if errors.password2 %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password_confirm %}            
-            <p class="error-message">{{ errors.password_confirm }}</p>
+            {% if errors.password2 %}            
+            <p class="error-message">{{ errors.password2 }}</p>
             {% endif %}
         </div>
 
