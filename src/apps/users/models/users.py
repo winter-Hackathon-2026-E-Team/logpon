@@ -6,12 +6,10 @@ class User(AbstractUser):
     class Meta:
         db_table = 'users'
     
-    username_validator = UnicodeUsernameValidator()
-
-    username = models.CharField(max_length=255, validators=[username_validator],)
-    password = models.CharField(max_length=255,)
+    # username, passwordはAbstractUser(AbstractBaseUser)より継承のため省略
+    # emailはblank=False, unique=Trueにするため上書き
     email = models.EmailField(blank=False, unique=True,)
-    # is_staff, is_activeはAbstractUserより継承
+    # is_staff, is_activeはAbstractUserより継承のため省略
     created_at = models.DateTimeField(auto_now_add=True,)
     updated_at = models.DateTimeField(auto_now=True,)
 

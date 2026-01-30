@@ -9,6 +9,10 @@ class SignupView(View):
 
     def post(self, request, *args, **kwargs):
         form = SignUpForm(request.POST)
-        
+        if form.is_valid():
+            form.save()
+            return render(request, 'users/login.html')
+        else:
+            return render(request, 'users/signup.html')
 
 signup = SignupView.as_view()
