@@ -1,18 +1,15 @@
 from django.shortcuts import render, redirect
-from django.views import View
+from django.views.generic.edit import CreateView
+from django.urls import reverse_lazy
 from ..forms.signup import SignUpForm
 
 # Create your views here.
-class SignupView(View):
-    def get(self, request, *args, **kwargs):
-        return render(request, 'users/signup.html')
-
-    def post(self, request, *args, **kwargs):
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return render(request, 'users/login.html')
-        else:
-            return render(request, 'users/signup.html')
+class SignupView(CreateView):
+    template_name = 'users/signup.html'
+    form_class = SignUpForm
+    success_url = reverse_lazy('users:login')
+    
+    def form_valid(self, form):
+        return super().form_valid(form) # success_urlにレスポンス
 
 signup = SignupView.as_view()

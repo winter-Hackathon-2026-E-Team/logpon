@@ -7,9 +7,9 @@ class User(AbstractUser):
         db_table = 'users'
         
     username_validator = UnicodeUsernameValidator()
-    username = models.CharField(max_length=150, validators=[username_validator],)
+    username = models.CharField(max_length=150, validators=[username_validator], unique=False,)
     # passwordはAbstractUser(AbstractBaseUser)より継承のため省略
-    # emailはblank=False, unique=Trueにするため上書き
+    # emailはblank=False, unique=Trueにするため修正
     email = models.EmailField(blank=False, unique=True,)
     # is_staff, is_activeはAbstractUserより継承のため省略
     created_at = models.DateTimeField(auto_now_add=True,)
