@@ -5,8 +5,10 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 class User(AbstractUser):
     class Meta:
         db_table = 'users'
-    
-    # username, passwordはAbstractUser(AbstractBaseUser)より継承のため省略
+        
+    username_validator = UnicodeUsernameValidator()
+    username = models.CharField(max_length=150, validators=[username_validator],)
+    # passwordはAbstractUser(AbstractBaseUser)より継承のため省略
     # emailはblank=False, unique=Trueにするため上書き
     email = models.EmailField(blank=False, unique=True,)
     # is_staff, is_activeはAbstractUserより継承のため省略
