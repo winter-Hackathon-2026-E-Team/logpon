@@ -11,15 +11,12 @@ a img:hover {
 }
 
 .page {
-    /* max-width: 1440px; ヘッダーの帯を画面幅いっぱいにするテスト */
     min-height: 100vh;
-    /* margin: 0 auto; ヘッダーの帯を画面幅いっぱいにするテスト */
 }
 
 .container {
     max-width: 1200px;
     height: 64px;
-    /* margin: 0 10%; ヘッダーの帯を画面幅いっぱいにするテスト */
     margin: 0 auto;
 }
 
@@ -121,7 +118,6 @@ footer {
 .footer-wrapper {
     max-width: 1200px;
     height: 32px;
-    /* margin: 0 10%; フッターの帯を画面幅いっぱいにするテスト */
     margin: 0 auto;
     display: flex;
     align-items: center;
