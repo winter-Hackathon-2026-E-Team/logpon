@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -9,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SignupView(CreateView, SuccessMessageMixin):
+class SignupView(SuccessMessageMixin, CreateView):
     template_name = 'users/signup.html'
     form_class = SignUpForm
     success_url = reverse_lazy('users:login')
@@ -31,5 +30,3 @@ class SignupView(CreateView, SuccessMessageMixin):
         response = super().form_valid(form)
         logger.warning("Created user pk=%s email=%s", self.object.pk, self.object.email)
         return response # success_urlにレスポンス
-
-signup = SignupView.as_view()

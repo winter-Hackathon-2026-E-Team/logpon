@@ -16,7 +16,7 @@
         
         <div class="auth-form">
             <label for="login-email">メールアドレス</label>
-            <input type="email" name="email" id="login-email" class="{% if errors.email %}is-error{% endif %}" required>
+            <input type="email" name="username" id="login-email" class="{% if errors.email %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
             {% if errors.email %}
             <p class="error-message">{{ errors.email }}</p>
