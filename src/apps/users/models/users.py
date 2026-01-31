@@ -1,13 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 
 class User(AbstractUser):
     class Meta:
         db_table = 'users'
         
-    username_validator = UnicodeUsernameValidator()
-    username = models.CharField(max_length=150, validators=[username_validator], unique=False,)
+    username = models.CharField(max_length=255, unique=False,)
     # passwordはAbstractUser(AbstractBaseUser)より継承のため省略
     # emailはblank=False, unique=Trueにするため修正
     email = models.EmailField(blank=False, unique=True,)
