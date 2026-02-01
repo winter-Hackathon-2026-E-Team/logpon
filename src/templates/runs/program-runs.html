@@ -1,11 +1,101 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>program-runs</title>
-</head>
-<body>
-    <h1>program-runs</h1>
-</body>
-</html>
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}プログラム実行{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/runs/program-runs.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
+<div class="execute-page">
+    <div class="execute-zone">
+        <!-- 左画面 -->
+        <div class="left-disp">
+
+            <section class="program-select">
+                <p>プログラム：</p>
+                <select name="program_id" class="program" id="programId">
+                    <!-- optionタグはバックエンドから取得したデータで作成する -->
+                    <option value="1">平日</option>
+                    <option value="2">休日</option>
+                </select>
+            </section>
+
+            <section class="timer-execute">
+                <button id="startBtn" type="button">
+                    <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
+                    <iconify-icon icon="uil:play" id="startIcon" class=""></iconify-icon>
+                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
+                </button>
+                <div class="timerFace">
+                    <p id="currentTimerName">Hackathon</p>
+                    <p id="remainingTime">
+                        12:34
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 右画面 -->
+        <div class="right-disp">
+            
+            <section id="executeTimerList">
+                <!-- タイマーはバックエンドから取得したデータで作成する -->
+                <button class="oneTimer finishedOneTimer" data-timer-run-id="001"
+                 data-category="集中">
+                    <p class="category">集中</p>
+                    <p class="timerName">Python</p>
+                    <p class="duration">25分</p>
+                </button>
+                <button class="oneTimer currentOneTimer" data-timer-run-id="002"
+                 data-category="休憩">
+                    <p class="category">休憩</p>
+                    <p class="timerName">お茶</p>
+                    <p class="duration">5分</p>
+                </button>
+                <button class="oneTimer" data-timer-run-id="003"
+                 data-category="集中">
+                    <p class="category">集中</p>
+                    <p class="timerName">Python</p>
+                    <p class="duration">25分</p>
+                </button>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="link-btns">
+        <a class="btn link-left-btn" href="{% url 'runs:records' %}">実施記録</a>
+        <a class="btn link-left-btn" href="{% url 'runs:daily-reports' %}">日報</a>
+        <!-- programsのurls.pyができたらhrefの中を入れる -->
+        <a class="btn link-right-btn" href="">プログラム作成</a>
+    </div>
+
+</div>
+
+<!-- メモモーダル -->
+<section id="modal" class="modal" hidden>
+    <div id="modalOverlay">
+        <div id="modalArea">
+            <div class="modal-close">
+                <button type="button" id="closeBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 id="memoModalTitle" class="modal-title">メモ作成</h2>
+            <p id="timerNameSnapshot">タイマー名</p>
+            <div class="modal-form">
+                <label for="memoTextarea" class="modal-label">メモ：</label>
+                <textarea id="memoTextarea" class="modal-textarea"></textarea>
+            </div>
+            <div>
+                <button class="btn modal-btn" type="button" id="memoSendBtn">作成</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JSファイル -->
+ <script src="{% static 'js/runs/program-runs.js' %}" defer></script>
+
+{% endblock %}

@@ -4,12 +4,14 @@
         href="{% url 'runs:program-runs' %}">プログラム<br>実行</a>
     </li>
     <li>
+        <!-- programsのurls.pyができたらhrefの中を入れる -->
         <a class="{% if request.resolver_match.url_name == 'programs' %}is-active{% endif %}" 
-        href="{% url 'programs:programs' %}">プログラム<br>作成・一覧</a>
+        href="">プログラム<br>作成・一覧</a>
     </li>
     <li>
+        <!-- timersのurls.pyができたらhrefの中を入れる -->
         <a class="{% if request.resolver_match.url_name == 'timers' %}is-active{% endif %}" 
-        href="{% url 'timers:timers' %}">タイマー<br>作成・一覧</a>
+        href="">タイマー<br>作成・一覧</a>
     </li>
     <li>
         <a class="{% if request.resolver_match.url_name == 'records' %}is-active{% endif %}" 
