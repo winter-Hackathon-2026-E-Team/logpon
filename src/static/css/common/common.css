@@ -44,11 +44,18 @@
     border-radius: 5px;
 }
 
-.auth-form .error-message {
+.users-error-message {
     color: red;
     font-size: 0.875rem;
     font-weight: 600;
     margin: 1px 0;
+    list-style: none;
+    max-width: 380px;
+    /* ここから3つは日本語の禁則処理 */
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-break: strict;
+    /* ここまで */
 }
 
 /* プログラムを選択するプルダウンのデザイン */
