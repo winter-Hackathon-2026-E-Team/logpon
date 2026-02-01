@@ -14,14 +14,15 @@ class UserLoginView(LoginView):
         user = form.get_user()
         messages.success(self.request, 'ログインしました。')
         logger.info("[login] SUCCESS user_id=%s email=%s", getattr(user, "id", None), getattr(user, "email", None))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        return response
     
     def form_invalid(self, form):
-        messages.error(self.request, 'メールアドレスまたはパスワードが違います。')
         logger.warning(
             "[login] FAILED username=%s non_field=%s errors=%s",
             form.data.get("username"),
             list(form.non_field_errors()),
             dict(form.errors),
         )
-        return super().form_invalid(form)
+        response = super().form_invalid(form)
+        return response
