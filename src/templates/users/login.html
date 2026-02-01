@@ -10,13 +10,33 @@
 {% block content %}
 <form method="post" action="{% url 'users:login' %}">
     {% csrf_token %}
+    <!-- ログイン失敗時のエラー（ユーザー名・パスワード不一致）-->
+    {% if form.non_field_errors %}
+        <ul class="error-list">
+        {% for error in form.non_field_errors %}
+            <li class="error">{{ error }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div>
+        {% for error in form.username.errors %}
+        <p class="error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <div>
+        {% for error in form.password.errors %}
+        <p class="error">{{ error }}</p>
+        {% endfor %}
+    </div>
 
     <div class="auth-wrapper">
         <h2>ログイン</h2>
         
         <div class="auth-form">
             <label for="login-email">メールアドレス</label>
-            <input type="email" name="email" id="login-email" class="{% if errors.email %}is-error{% endif %}" required>
+            <input type="email" name="username" id="login-email" class="{% if errors.email %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
             {% if errors.email %}
             <p class="error-message">{{ errors.email }}</p>

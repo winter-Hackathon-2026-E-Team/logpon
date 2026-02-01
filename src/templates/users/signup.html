@@ -10,6 +10,38 @@
 {% block content %}
 <form method="post" action="{% url 'users:signup' %}">
 {% csrf_token %}
+  <!-- フォーム全体のエラー（password不一致など）-->
+  {% if form.non_field_errors %}
+    <ul class="error-list">
+      {% for error in form.non_field_errors %}
+        <li class="error">{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div>
+    {% for error in form.username.errors %}
+      <p class="error">{{ error }}</p>
+    {% endfor %}
+  </div>
+
+  <div>
+    {% for error in form.email.errors %}
+      <p class="error">{{ error }}</p>
+    {% endfor %}
+  </div>
+
+  <div>
+    {% for error in form.password1.errors %}
+      <p class="error">{{ error }}</p>
+    {% endfor %}
+  </div>
+
+  <div>
+    {% for error in form.password2.errors %}
+      <p class="error">{{ error }}</p>
+    {% endfor %}
+  </div>
 
     <div class="auth-wrapper">
         <h2>新規登録</h2>
@@ -35,22 +67,22 @@
         </div>
 
         <div class="auth-form">
-            <label for="signup-password">パスワード</label>
-            <input type="password" name="password" id="signup-password"
-             class="{% if errors.password %}is-error{% endif %}" required>
+            <label for="signup-password1">パスワード</label>
+            <input type="password" name="password1" id="signup-password1"
+             class="{% if errors.password1 %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password %}            
-            <p class="error-message">{{ errors.password }}</p>
+            {% if errors.password1 %}            
+            <p class="error-message">{{ errors.password1 }}</p>
             {% endif %}
         </div>
 
         <div class="auth-form">
-            <label for="signup-password-confirm">パスワード（確認用）</label>
-            <input type="password" name="password_confirm" id="signup-password-confirm"
-             class="{% if errors.password_confirm %}is-error{% endif %}" required>
+            <label for="signup-password2">パスワード（確認用）</label>
+            <input type="password" name="password2" id="signup-password2"
+             class="{% if errors.password2 %}is-error{% endif %}" required>
             <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password_confirm %}            
-            <p class="error-message">{{ errors.password_confirm }}</p>
+            {% if errors.password2 %}            
+            <p class="error-message">{{ errors.password2 }}</p>
             {% endif %}
         </div>
 
