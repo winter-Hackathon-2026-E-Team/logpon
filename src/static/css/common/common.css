@@ -90,7 +90,7 @@
 }
 
 /* モーダルに関する指定 */
-#moodal {
+#modal {
     position: fixed;
     inset: 0;
 }
