@@ -12,3 +12,8 @@ class SignUpForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('このメールアドレスは既に登録されています')
         return email.lower().strip()
+
+    # UserCreationFormのusernameのUnique設定解除
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        return username
