@@ -1,0 +1,213 @@
+.execute-page {
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.execute-zone {
+    display: flex;
+    align-items: center;
+    margin-top: 22px;
+}
+
+.left-disp {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* プログラム選択のプルダウンとしてmarginを除いて共通化 */
+.program-select {
+    margin-bottom: 36px;
+}
+/* ここまで */
+
+.timer-execute {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+#startBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;
+    height: 55px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    margin-bottom: 56px;
+    cursor: pointer;
+    border: none;
+}
+
+#startBtn:hover {
+    opacity: 0.6;
+}
+
+#startIcon, #pauseIcon {
+    font-size: 41px;
+    color: var(--color-bg);
+}
+/* スタートだけ偏るので調整 */
+#startIcon {
+    margin-left: 5px;
+}
+
+.timerFace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 55px;
+}
+
+.timerFace {
+    border: solid 18px var(--color-primary);
+    position: relative;
+    width: 411px;
+    height: 411px;
+    border-radius: 50%;
+}
+
+/* .timerFace::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        #aae3e3 0deg 180deg,
+        #53b5da 180deg 360deg
+    );
+}
+
+.timerFace::after {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    background: white;
+} */
+
+#currentTimerName {
+    font-size: 1.25rem;
+    margin: 107px 0 56px;
+}
+
+#remainingTime {
+    font-size: 6.25rem;
+    margin: 0;
+}
+
+.right-disp {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+/* timerlistとしてある程度共通化できそう */
+#executeTimerList {
+    border: 1px solid var(--color-frame);
+    width: 525px;
+    height: 702px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    padding: 13px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    align-items: center;
+}
+/* ここまで */
+
+/* アニメーションを除いて共通化 */
+.oneTimer {
+    transform: scale(1);
+    transition: transform 0.2s ease-out;
+    cursor: pointer;
+}
+/* ここまで */
+.oneTimer[data-category="休憩"],
+.oneTimer[data-category="リフレッシュ"] {
+    cursor: default;
+}
+
+.oneTimer[data-category="集中"]:hover {
+    transform: scale(1.02);
+}
+
+.category {
+    font-size: 1rem;
+    flex: 1;
+}
+
+.timerName {
+    flex: 2;
+}
+
+.duration {
+    flex: 1;
+    text-align: right;
+}
+
+.finishedOneTimer {
+    background: var(--color-finished-timer-bg);
+    color: var(--color-text-muted);
+}
+
+.currentOneTimer {
+    position: relative;
+}
+
+.currentOneTimer::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    background: var(--color-accent);
+}
+
+.link-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    place-items: center;
+    margin-bottom: 17px;
+}
+
+.link-btns .btn {
+    width: 231px;
+    font-size: 1.375rem;
+}
+
+.link-left-btn {
+    flex: 1;
+}
+
+.link-right-btn {
+    flex: 2;
+}
+
+/* メモモーダル */
+/* gap以外はcommon.cssで指定 */
+#modalArea {
+    gap: 24px;
+}
+
+#timerNameSnapshot {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.modal-textarea {
+    width: 380px;
+    height: 200px;
+    margin-bottom: 35px;
+}
+
+/* スタートボタンを入れ替える時に付与するクラス */
+.hidden {
+    display: none;
+}

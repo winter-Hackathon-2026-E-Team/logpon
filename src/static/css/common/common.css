@@ -44,11 +44,18 @@
     border-radius: 5px;
 }
 
-.auth-form .error-message {
+.users-error-message {
     color: red;
     font-size: 0.875rem;
     font-weight: 600;
     margin: 1px 0;
+    list-style: none;
+    max-width: 380px;
+    /* ここから3つは日本語の禁則処理 */
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-break: strict;
+    /* ここまで */
 }
 
 /* プログラムを選択するプルダウンのデザイン */
@@ -81,3 +88,68 @@
     border: 1px solid var(--color-frame);
     box-shadow: 2px 2px 4px var(--color-frame);
 }
+
+/* モーダルに関する指定 */
+#modal {
+    position: fixed;
+    inset: 0;
+}
+
+#modalOverlay {
+    background: rgba(255, 255, 255, 0.8);
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#modalArea {
+    background: var(--color-bg);
+    box-shadow: 2px 4px 10px var(--color-frame);
+    border-radius: 10px;
+    width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px 60px;
+    box-sizing: border-box;
+    cursor: default;
+    z-index: 1100;
+}
+
+.modal-close {
+    align-self: flex-end;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer
+}
+
+.modal-close:hover {
+    opacity: 0.6;
+}
+
+.modal-title {
+    margin: 0;
+}
+
+
+.modal-label {
+    font-size: 0.875rem;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-btn {
+    border: none;
+}
+/* モーダルに関する指定ここまで */

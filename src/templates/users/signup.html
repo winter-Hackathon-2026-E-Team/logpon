@@ -10,79 +10,61 @@
 {% block content %}
 <form method="post" action="{% url 'users:signup' %}">
 {% csrf_token %}
-  <!-- フォーム全体のエラー（password不一致など）-->
-  {% if form.non_field_errors %}
-    <ul class="error-list">
-      {% for error in form.non_field_errors %}
-        <li class="error">{{ error }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <div>
-    {% for error in form.username.errors %}
-      <p class="error">{{ error }}</p>
-    {% endfor %}
-  </div>
-
-  <div>
-    {% for error in form.email.errors %}
-      <p class="error">{{ error }}</p>
-    {% endfor %}
-  </div>
-
-  <div>
-    {% for error in form.password1.errors %}
-      <p class="error">{{ error }}</p>
-    {% endfor %}
-  </div>
-
-  <div>
-    {% for error in form.password2.errors %}
-      <p class="error">{{ error }}</p>
-    {% endfor %}
-  </div>
 
     <div class="auth-wrapper">
         <h2>新規登録</h2>
+        <!-- フォーム全体のエラー -->
+        {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <p class="users-error-message">{{ error }}</p>
+        {% endfor %}
+        {% endif %}
 
         <div class="auth-form">
             <label for="signup-email">メールアドレス</label>
             <input type="email" name="email" id="signup-email"
-             class="{% if errors.email %}is-error{% endif %}" required>
-            <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.email %}
-            <p class="error-message">{{ errors.email }}</p>                
+             class="{% if form.email.errors %}is-error{% endif %}" required>
+            <!-- メールアドレスに関するエラー -->
+            {% if form.email.errors %}
+            {% for error in form.email.errors %}            
+            <p class="users-error-message">{{ error }}</p>
+            {% endfor %}
             {% endif %}
         </div>
 
         <div class="auth-form">
             <label for="signup-username">ユーザ名</label>
             <input type="text" name="username" id="signup-username"
-             class="{% if errors.username %}is-error{% endif %}" required>
-            <!-- エラーメッセージの仕様が決まったら編集する（ユーザ名はエラー必要ないかも） -->
-            {% if errors.username %}            
-            <p class="error-message">{{ errors.username }}</p>
+             class="{% if form.username.errors %}is-error{% endif %}" required>
+            <!-- ユーザ名に関するエラー -->
+            {% if form.username.errors %}            
+            {% for error in form.username.errors %}            
+            <p class="users-error-message">{{ error }}</p>
+            {% endfor %}
             {% endif %}
         </div>
 
         <div class="auth-form">
             <label for="signup-password1">パスワード</label>
             <input type="password" name="password1" id="signup-password1"
-             class="{% if errors.password1 %}is-error{% endif %}" required>
-            <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password1 %}            
-            <p class="error-message">{{ errors.password1 }}</p>
+             class="{% if form.password1.errors %}is-error{% endif %}" required>
+            <!-- パスワード１に関するエラー -->
+            {% if form.password1.errors %}            
+            {% for error in form.password1.errors %}            
+            <p class="users-error-message">{{ error }}</p>
+            {% endfor %}
             {% endif %}
         </div>
 
         <div class="auth-form">
             <label for="signup-password2">パスワード（確認用）</label>
             <input type="password" name="password2" id="signup-password2"
-             class="{% if errors.password2 %}is-error{% endif %}" required>
-            <!-- エラーメッセージの仕様が決まったら編集する -->
-            {% if errors.password2 %}            
-            <p class="error-message">{{ errors.password2 }}</p>
+             class="{% if form.password2.errors %}is-error{% endif %}" required>
+            <!-- パスワード２に関するエラー -->
+            {% if form.password2.errors %}
+            {% for error in form.password2.errors %}            
+            <p class="users-error-message">{{ error }}</p>
+            {% endfor %}
             {% endif %}
         </div>
 
