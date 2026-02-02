@@ -15,6 +15,6 @@ class UserPasswordResetView(PasswordResetView):
     success_url = reverse_lazy('users:login')
 
     def form_valid(self, form):
-        logger.info('Password reset requested for email=%s', form.cleaned_data.get('email'))
+        logger.warning('Password reset requested for email=%s', form.cleaned_data.get('email'))
         messages.success(self.request, 'パスワード再設定用のメールを送信しました。')
         return super().form_valid(form)
