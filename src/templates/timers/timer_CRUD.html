@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Timers</title>
+</head>
+<body>
+  <h1>Timers（CRUD 1画面）</h1>
+
+  <!-- 作成 -->
+  <section>
+    <h2>新規作成</h2>
+    <form method="post" action="{% url 'timers:list' %}">
+      {% csrf_token %}
+
+      {{ create_form.non_field_errors }}
+
+      <p>
+        {{ create_form.name.label_tag }}
+        {{ create_form.name }}
+        {{ create_form.name.errors }}
+      </p>
+
+      <p>
+        {{ create_form.category.label_tag }}
+        {{ create_form.category }}
+        {{ create_form.category.errors }}
+      </p>
+
+      <p>
+        {{ create_form.duration_minutes.label_tag }}
+        {{ create_form.duration_minutes }}
+        {{ create_form.duration_minutes.errors }}
+      </p>
+
+      <p>
+        {{ create_form.sound.label_tag }}
+        {{ create_form.sound }}
+        {{ create_form.sound.errors }}
+        <small>（未選択OK）</small>
+      </p>
+
+      <p>
+        <label>
+          {{ create_form.is_active }} 有効
+        </label>
+      </p>
+
+      <button type="submit">作成</button>
+    </form>
+  </section>
+
+  <hr />
+
+  <!-- 一覧 -->
+  <section>
+    <h2>一覧</h2>
+
+    <ul>
+      {% for row in rows %}
+        {% with t=row.timer f=row.form %}
+        <li>
+          {{ t.id }} / {{ t.name }}（{{ f.duration_minutes.value|default:t.duration_seconds }}） / {{ t.get_category_display }}
+          / sound={{ t.sound|default:"なし" }} / active={{ t.is_active }}
+
+          <button type="button" onclick="document.getElementById('edit-{{ t.id }}').showModal()">
+            編集
+          </button>
+
+          <dialog id="edit-{{ t.id }}">
+            <h3>編集</h3>
+            <form method="post" action="{% url 'timers:edit' t.id %}">
+              {% csrf_token %}
+
+              {{ f.non_field_errors }}
+
+              <p>
+                {{ f.name.label_tag }}
+                {{ f.name }}
+                {{ f.name.errors }}
+              </p>
+
+              <p>
+                {{ f.category.label_tag }}
+                {{ f.category }}
+                {{ f.category.errors }}
+              </p>
+
+              <p>
+                {{ f.duration_minutes.label_tag }}
+                {{ f.duration_minutes }}
+                {{ f.duration_minutes.errors }}
+              </p>
+
+              <p>
+                {{ f.sound.label_tag }}
+                {{ f.sound }}
+                {{ f.sound.errors }}
+                <small>（未選択OK）</small>
+              </p>
+
+              <p>
+                <label>{{ f.is_active }} 有効</label>
+              </p>
+
+              <button type="submit">更新</button>
+              <button type="button" onclick="document.getElementById('edit-{{ t.id }}').close()">閉じる</button>
+            </form>
+          </dialog>
+
+          <button type="button" onclick="document.getElementById('del-{{ t.id }}').showModal()">
+            削除
+          </button>
+
+          <dialog id="del-{{ t.id }}">
+            <p>削除しますか？（ID: {{ t.id }} / {{ t.name }}）</p>
+
+            <form method="post" action="{% url 'timers:delete' t.id %}">
+                {% csrf_token %}
+                <button type="submit">削除する</button>
+                <button type="button" onclick="document.getElementById('del-{{ t.id }}').close()">やめる</button>
+             </form>
+          </dialog>
+
+        </li>
+        {% endwith %}
+      {% empty %}
+        <li>まだタイマーがありません</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if open_edit_id %}
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dlg = document.getElementById("edit-{{ open_edit_id }}");
+      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+    });
+  </script>
+  {% endif %}
+</body>
+</html>
