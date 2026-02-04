@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from .views import index, login, logout, password_reset, signup
 
@@ -18,12 +18,13 @@ urlpatterns = [
         ),
     # ③メールのリンク先（新パスワード入力）
     path('password-reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='users/password-reset-confirm.html'),
+        template_name='users/password-reset-confirm.html',
+        success_url=reverse_lazy('users:password-reset-complete')),
         name='password-reset-confirm'
         ),
     # ④完了
     path('password-reset/complete/',auth_views.PasswordResetCompleteView.as_view(
-        template_name='users/password-reset-complete.html'),
+        template_name='users/password-reset-complete.html',),
         name='password-reset-complete'
         ),
 ]
