@@ -1,0 +1,164 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}プログラム作成・一覧{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/programs/programs.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
+<div class="programs-page">
+    <div class="programs-zone">
+        <!-- 左画面 -->
+        <div class="left-disp">
+
+            <section class="program-select">
+                <p>プログラム：</p>
+                <select name="program_id" class="program" id="programId">
+                    <!-- optionタグはバックエンドから取得したデータで作成する -->
+                    <option value="1">平日</option>
+                    <option value="2">休日</option>
+                </select>
+            </section>
+
+            <section class="program-modify">
+                <button type="button" class="btn program-modify-btn" id="programCreate">新規作成</button>
+                <button type="button" class="btn program-modify-btn" id="programUpdate">編集</button>
+                <button type="button" class="btn program-modify-btn" id="programDelete">削除</button>
+            </section>
+
+            <p  class="timers-label" id="programName">プログラム名：</p>
+            <section id="listInAProgram">
+                <div class="oneTimer">
+                    <p class="category">集中</p>
+                    <p class="timerName">Python</p>
+                    <p class="duration">25分</p>
+                    <button class="trash-btn">
+                        <iconify-icon icon="iconamoon:trash" id="trashBox"></iconify-icon>
+                    </button>
+                </div>
+                <div class="oneTimer">
+                    <p class="category">集中</p>
+                    <p class="timerName">Python</p>
+                    <p class="duration">25分</p>
+                    <button class="trash-btn">
+                        <iconify-icon icon="iconamoon:trash" id="trashBox"></iconify-icon>
+                    </button>
+                </div>
+            </section>
+            <div>
+                <button type="button" class="btn" id="program-decide">確定</button>
+            </div>                      
+
+        </div>
+
+        <!-- 中画面 -->
+        <div class="center-disp">
+
+            <section class="timer-add-btn">
+                <button id="focusAdd">
+                    <iconify-icon icon="fa:arrow-left" class="timer-add-icon" id="focusAddIcon"></iconify-icon>
+                </button>
+                <button>
+                    <iconify-icon icon="fa:arrow-left" class="timer-add-icon"  id="restADDIcon"></iconify-icon>
+                </button id="restAdd">                
+            </section>
+
+        </div>
+
+        <!-- 右画面 -->
+        <div class="right-disp">
+
+            <section class="timer-and-link">
+                <p>作成済みタイマー</p>
+                <a class="btn link-timers-btn" href="{% url 'timers:timers' %}">タイマー作成・一覧</a>
+            </section>
+            
+            <p class="timers-label">集中：</p>
+            <section id="focusList">
+                <!-- タイマーはバックエンドから取得したデータで作成する -->
+                <div class="oneTimer"  data-timer_id="1">
+                    <p class="category">集中</p>
+                    <p class="timerName">Python</p>
+                    <p class="duration">25分</p>
+                </div>
+                <!-- 以下がレンダリング用で上がサンプル -->
+                {% if focus_timers %}
+                {% for timer in focus_timers %}
+                <div class="oneTimer"  data-timer_id="1">
+                    <p class="category">{{ focus_timers.category }}</p>
+                    <p class="timerName">{{ focus_timers.timer_name }}</p>
+                    <p class="duration">{{ focus_timers.duration_sec }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>タイマーが登録されていません。<br>「タイマー作成・一覧」からタイマーを作成してください。</p>
+                {% endif %}
+
+            </section>
+
+            <p class="timers-label">休憩・リフレッシュ：</p>
+            <section id="restList">
+                <!-- タイマーはバックエンドから取得したデータで作成する -->
+                <div class="oneTimer" data-timer_id="1">
+                    <p class="category">休憩</p>
+                    <p class="timerName">目を休める</p>
+                    <p class="duration">5分</p>
+                </div>
+                <!-- 以下がレンダリング用で上がサンプル -->
+                {% if other_timers %}
+                {% for timer in other_timers %}
+                <div class="oneTimer"  data-timer_id="1">
+                    <p class="category">{{ other_timers.category }}</p>
+                    <p class="timerName">{{ other_timers.timer_name }}</p>
+                    <p class="duration">{{ other_timers.duration_sec }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>タイマーが登録されていません。<br>「タイマー作成・一覧」からタイマーを作成してください。</p>
+                {% endif %}
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<!-- プログラム作成・変更モーダル -->
+<section id="modal" class="modal" hidden>
+    <div id="modalOverlay">
+        <div id="modalArea">
+            <div class="modal-close">
+                <button type="button" id="closeBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 id="memoModalTitle" class="modal-title">プログラム作成</h2>
+            <div class="modal-form">
+                <label for="programInput" class="modal-label">新規プログラム名：</label>
+                <input type="text" name="programName" id="programInput" class="modal-textarea"></textarea>
+            </div>
+            <div>
+                <button class="btn modal-btn" type="button" id="memoSendBtn">作成</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- プログラム削除モーダル -->
+<section id="modal" class="modal" hidden>
+    <div id="modalOverlay">
+        <div id="modalArea">
+            <div class="modal-close">
+                <button type="button" id="closeBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 id="memoModalTitle" class="modal-title">プログラム削除</h2>
+            <p class="delete-desctiption">このプログラムを削除します。</p>
+            <p id="deleteProgramName">（プログラム名）</p>
+            <div>
+                <button class="btn modal-btn" type="button" id="memoSendBtn">削除</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,142 @@
+.programs-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.programs-zone {
+    display: flex;
+    margin: 25px 0 16px;
+}
+
+/* プログラム選択のプルダウンとしてmarginを除いて共通化 */
+.program-select {
+    margin-bottom: 9px;
+}
+/* ここまで */
+
+.program-modify {
+    display: flex;
+    gap: 22px;
+    margin-bottom: 10px;
+}
+
+.program-modify-btn {
+    width: 160px;
+    border: none;
+}
+
+.programName {
+    font-size: 10px;
+}
+
+/* タイマーが入るボックスを高さのみ各自設定で共通化して良い */
+#listInAProgram {
+    border: solid 1px var(--color-frame);
+    width: 525px;
+    height: 575px;
+    box-sizing: border-box;
+    padding: 13px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 13px;
+}
+/* ここまで */
+
+.category {
+    font-size: 1rem;
+    flex: 1;
+}
+
+.timerName {
+    flex: 2;
+}
+
+.duration {
+    flex: 1;
+    text-align: right;
+}
+
+.trash-btn {
+    border: none;
+    background: none;
+    font-size: 27px;
+    margin: 2px 0 0 10px;
+}
+
+#program-decide {
+    border: none;
+    width: 525px;
+}
+
+.timer-add-btn {
+    display: flex;
+    flex-direction: column;
+    width: 84px;
+    height: 753px;
+}
+
+.timer-add-btn button {
+    border: none;
+    background: none;
+}
+
+.timer-add-icon {
+    font-size: 44px;
+    color: var(--color-primary);
+}
+
+#focusAddIcon {
+    margin: 250px auto 300px;
+}
+
+.timer-and-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.timer-and-link p {
+    font-size: 1.5rem;
+}
+
+.link-timers-btn {
+    width: 200px;
+}
+
+.timers-label {
+    font-size: 0.875rem;
+    margin: 0 0 6px;
+}
+
+
+
+/* タイマーが入るボックスを高さのみ各自設定で共通化して良い */
+#focusList {
+    border: solid 1px var(--color-frame);
+    width: 525px;
+    height: 356px;
+    box-sizing: border-box;
+    padding: 13px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 21px;
+    gap: 13px;
+}
+
+#restList {
+    border: solid 1px var(--color-frame);
+    width: 525px;
+    height: 289px;
+    box-sizing: border-box;
+    padding: 13px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 13px;
+}
+/* ここまで */
