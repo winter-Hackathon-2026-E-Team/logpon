@@ -12,7 +12,7 @@ class UserPasswordResetView(PasswordResetView):
     email_template_name = 'users/password-reset-email.txt' # メール本文
     subject_template_name = 'users/password-reset-subject.txt' # メールの件名
 
-    success_url = reverse_lazy('users:login')
+    success_url = reverse_lazy('users:password-reset-done')
 
     def form_valid(self, form):
         logger.warning('Password reset requested for email=%s', form.cleaned_data.get('email'))
