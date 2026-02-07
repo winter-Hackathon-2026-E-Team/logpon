@@ -65,6 +65,13 @@ services:
     # .envファイルから環境変数を読み込む
     env_file:
       - .env
+  
+  # MailHog(ローカル環境用のSMTPサーバー)の設定
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - '8025:8025' # ブラウザ上で確認するためのポート番号
+      - '1025:1025' # MailHogのデフォルトSMTPポート番号
 
 # DBデータ永続化用の名前付きボリューム
 volumes:
