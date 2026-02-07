@@ -1,0 +1,1 @@
+# skip/next/finish（タイマー移行ロジック）
