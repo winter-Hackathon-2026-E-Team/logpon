@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.runs',
     'apps.timers',
-    'apps.programs',
+    # 'apps.programs',
 ]
 
 MIDDLEWARE = [

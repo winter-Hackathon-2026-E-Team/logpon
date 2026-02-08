@@ -1,1 +1,1 @@
-# status遷移のルール
+# start/resume/pause/skip/step_next/interrupt

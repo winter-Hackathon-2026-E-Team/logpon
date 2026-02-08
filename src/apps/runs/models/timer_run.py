@@ -7,11 +7,12 @@ class TimerRun(models.Model):
     
     class Status(models.TextChoices):
         PENDING = 'pending', '初期状態'
-        RUNNING = 'running', '実行中'
-        PAUSED = 'paused', '一時停止中'
-        FINISHED = 'finished', '完了'
-        SKIPPED = 'skipped', 'スキップ'
-        INTERRUPTED = 'interrupted', '中断'
+        START = 'start', '初期開始'
+        RESUME = 'resume', '再開'
+        PAUSE = 'pause', '一時停止中'
+        FINISH = 'finish', '完了'
+        SKIP = 'skip', 'スキップ'
+        INTERRUPT = 'interrupt', '中断'
     
     order_index_snapshot = models.IntegerField()
     timer_name_snapshot = models.CharField(max_length=255)
