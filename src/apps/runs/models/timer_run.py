@@ -7,26 +7,30 @@ class TimerRun(models.Model):
     
     class Status(models.TextChoices):
         PENDING = 'pending', '初期状態'
-        START = 'start', '初期開始'
-        RESUME = 'resume', '再開'
-        PAUSE = 'pause', '一時停止中'
-        FINISH = 'finish', '完了'
-        SKIP = 'skip', 'スキップ'
-        INTERRUPT = 'interrupt', '中断'
+        RUNNING = 'running', '実行中'
+        PAUSED = 'paused', '一時停止中'
+        FINISHED = 'finished', '完了'
+        SKIPPED = 'skipped', 'スキップ'
+        INTERRUPTED = 'interrupted', '中断'
+    
+    class Category(models.TextChoices):
+        FOCUS = "focus", "集中"
+        BREAK = "break", "休憩"
+        REFRESH = "refresh", "リフレッシュ"
     
     order_index_snapshot = models.IntegerField()
-    timer_name_snapshot = models.CharField(max_length=255)
-    duration_sec_snapshot = models.IntegerField()
+    timer_name_snapshot = models.CharField(max_length=50)
+    duration_sec_snapshot = models.PositiveIntegerField()
     sound_file_snapshot = models.CharField(max_length=255)
-    category_snapshot = models.CharField(max_length=255)
-    timer_status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    started_at = models.DateTimeField(null=True)
-    ended_a = models.DateTimeField(null=True)
-    paused_at = models.DateTimeField(null=True)
-    elapsed_sec = models.IntegerField(null=True)
-    memo = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    category_snapshot = models.CharField(max_length=20, choices=Category.choices)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    started_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    paused_at = models.DateTimeField(null=True, blank=True)
+    elapsed_sec = models.IntegerField(default=0)
+    memo = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     program_run = models.ForeignKey(
         to=ProgramRun,
