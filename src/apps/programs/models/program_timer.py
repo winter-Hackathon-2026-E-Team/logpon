@@ -11,6 +11,7 @@ class ProgramTimer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "program_timers"
         constraints = [
             UniqueConstraint(fields=["program", "order_index"], name="uq_program_order_index"),
         ]
@@ -18,3 +19,4 @@ class ProgramTimer(models.Model):
 
     def __str__(self):
         return f"{self.program_id}:{self.order_index}"
+
