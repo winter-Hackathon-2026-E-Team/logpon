@@ -37,3 +37,6 @@ class TimerRun(models.Model):
         on_delete=models.CASCADE,
         related_name='timer_runs',
     )
+
+    def __str__(self) -> str:
+        return self.timer_name_snapshot
