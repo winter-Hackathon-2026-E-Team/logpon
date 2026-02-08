@@ -1,0 +1,72 @@
+{# src/templates/programs/program_CRUD.html #}
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Programs（CRUD 1画面）</title>
+  </head>
+
+  <body>
+    <h1>Programs（CRUD 1画面）</h1>
+
+    {# messages を使っているなら表示（任意） #}
+    {% if messages %}
+      <div class="messages">
+        <ul>
+          {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- 新規作成 -->
+    <section>
+      <h2>新規作成</h2>
+      <form method="post" action="{% url 'programs:list' %}">
+        {% csrf_token %}
+        {{ create_form.non_field_errors }}
+        {{ create_form.as_p }}
+        <button type="submit">作成</button>
+      </form>
+    </section>
+
+    <hr />
+
+    <!-- 一覧 + 編集 + 削除 -->
+    <section>
+      <h2>一覧</h2>
+
+      <ul>
+        {% for row in rows %}
+          <li style="margin-bottom: 16px;">
+            <div>
+              <strong>{{ row.program.program_name }}</strong>
+              <span>（id: {{ row.program.id }}）</span>
+            </div>
+
+            <!-- 編集（同一画面） -->
+            <div style="margin-top: 8px;">
+              <form method="post" action="{% url 'programs:edit' row.program.id %}">
+                {% csrf_token %}
+                {{ row.form.non_field_errors }}
+                {{ row.form.as_p }}
+                <button type="submit">更新</button>
+              </form>
+            </div>
+
+            <!-- 削除 -->
+            <div style="margin-top: 8px;">
+              <form method="post" action="{% url 'programs:delete' row.program.id %}">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('削除しますか？');">削除</button>
+              </form>
+            </div>
+          </li>
+        {% empty %}
+          <li>まだありません</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </body>
+</html>
