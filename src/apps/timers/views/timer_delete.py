@@ -9,8 +9,8 @@ from apps.timers.views.mixins import TimerRowsMixin
 class TimerDeleteView(LoginRequiredMixin, TimerRowsMixin, View):
     template_name = "timers/timer_CRUD.html"
 
-    def post(self, request, id: int):
-        deleted, _ = Timer.objects.filter(id=id, user=request.user).delete()
+    def post(self, request, timer_id: int, *args, **kwargs):
+        deleted, _ = Timer.objects.filter(id=timer_id, user=request.user).delete()
 
         if deleted:
             return redirect("timers:list")
@@ -21,10 +21,10 @@ class TimerDeleteView(LoginRequiredMixin, TimerRowsMixin, View):
             "create_form": create_form,
             "rows": rows,
             "delete_error": "削除対象のタイマーが見つかりませんでした",
-            "open_delete_id": id,
+            "open_delete_id": timer_id,
         })
 
-
-    def get(self, request, id: int):
+    def get(self, request, timer_id: int, *args, **kwargs):
         return redirect("timers:list")
+
 
