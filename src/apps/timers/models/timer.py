@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.db import models
-from apps.timers.models.sound import Sound
 
 
 class Timer(models.Model):
@@ -15,18 +14,19 @@ class Timer(models.Model):
         max_length=20,
         choices=Category.choices,
     )
+
     user = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name="timers",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="timers",
     )
 
-    # 内部は秒で保持（UIは分でもOKだが保存は秒が楽）
+    # 内部は秒で保持
     duration_seconds = models.PositiveIntegerField()
 
-    # Soundは開発側で用意。削除されたらタイマー側はNULLにするのが安全
+    # Soundは開発側で用意。削除されたらタイマー側はNULL
     sound = models.ForeignKey(
-        Sound,
+        "timers.Sound",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
