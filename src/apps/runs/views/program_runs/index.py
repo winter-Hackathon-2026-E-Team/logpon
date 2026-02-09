@@ -3,9 +3,13 @@ import json
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.urls import reverse_lazy
 from ...models.program_run import ProgramRun
 from ....programs.models.program_timer import ProgramTimer
 from ...forms.program_runs.create import CreateForm
+from ...selectors.program_runs import selector_exist
+from ...serializers.program_runs import serialize_initial
 
 class ProgramRunsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -14,17 +18,15 @@ class ProgramRunsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         body = json.loads(request.body)
         program_id = body.get('program_id')
-        print(type(body), body)
-        print(program_id)
 
-        if ProgramRun.objects.filter(program_id=program_id).values():
-            print(f'一致したprogram_id：{program_id}')
-            data = ProgramRun.objects.filter(program_id=program_id)
-            print(data)
+        if ProgramRun.objects.filter(program_id=program_id):
+            program_run, timer_runs, program_run_id = selector_exist(program_id)
         else:
-            print(f'一致したprogram_id：{program_id}')
-            data = ProgramTimer.objects.filter(program_id=program_id)
-            print(data)
-            form = CreateForm(data)
+            program_timers = ProgramTimer.objects.filter(program_id=program_id).order_by('order_index').values()
+            print(program_timers)
+            # form = CreateForm(data)
 
-        return redirect('runs:program-runs-detail')
+        data = serialize_initial(program_run, timer_runs)
+        print(data)
+        url = reverse_lazy('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
+        return JsonResponse({'redirect_url': url, 'data': data})

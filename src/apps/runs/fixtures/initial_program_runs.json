@@ -4,7 +4,7 @@
     "pk": 1,
     "fields": {
       "program_name_snapshot": "河川の勉強セット",
-      "status": "running",
+      "status": "draft",
       "started_at": "2026-02-09T09:00:00Z",
       "ended_at": null,
       "paused_at": null,
