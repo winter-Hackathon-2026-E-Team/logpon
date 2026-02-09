@@ -16,13 +16,15 @@ class ProgramRunsView(LoginRequiredMixin, View):
         program_id = body.get('program_id')
         print(type(body), body)
         print(program_id)
-        print(ProgramRun.objects.values())
-        print(ProgramRun.objects.filter(program_id=program_id).values())
 
         if ProgramRun.objects.filter(program_id=program_id).values():
+            print(f'一致したprogram_id：{program_id}')
             data = ProgramRun.objects.filter(program_id=program_id)
+            print(data)
         else:
+            print(f'一致したprogram_id：{program_id}')
             data = ProgramTimer.objects.filter(program_id=program_id)
+            print(data)
             form = CreateForm(data)
 
         return redirect('runs:program-runs-detail')

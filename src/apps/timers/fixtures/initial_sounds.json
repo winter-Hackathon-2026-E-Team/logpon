@@ -1,0 +1,22 @@
+[
+  {
+    "model": "timers.sound",
+    "pk": 1,
+    "fields": {
+      "name": "Bell",
+      "file_path": "sounds/bell.mp3",
+      "is_active": true,
+      "created_at": "2026-02-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "timers.sound",
+    "pk": 2,
+    "fields": {
+      "name": "Chime",
+      "file_path": "sounds/chime.mp3",
+      "is_active": true,
+      "created_at": "2026-02-01T00:00:00Z"
+    }
+  }
+]
