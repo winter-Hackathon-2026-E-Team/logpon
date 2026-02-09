@@ -1,0 +1,26 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}program_id送信テスト{% endblock %}
+
+{% block content %}
+<label for="programId">プログラム：</label>
+<select id="programId">
+  <option value="1">平日</option>
+  <option value="2">休日</option>
+</select>
+
+<button type="button" id="postProgramBtn">送信</button>
+
+<!-- JSへ渡す設定（URLとCSRF） -->
+<div
+  id="config"
+  data-post-url="{% url 'runs:program-runs' %}"
+  data-csrf="{{ csrf_token }}"
+  hidden
+></div>
+
+<!-- JSファイル -->
+ <script src="{% static 'js/runs/test_program-runs.js' %}" defer></script>
+
+{% endblock %}
