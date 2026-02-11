@@ -4,12 +4,12 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.urls import reverse_lazy
+from django.urls import reverse
 from ...models.program_run import ProgramRun
-from ....programs.models.program_timer import ProgramTimer
-from ...forms.program_runs.create import CreateForm
-from ...selectors.program_runs import selector_exist
-from ...serializers.program_runs import serialize_initial
+from ....programs.models.program import Program
+from ...selectors.program_runs import selector_exist_runs
+from ...serializers.program_runs import serialize_exist_runs
+from ...services.program_runs.create_draft import create_runs_draft
 
 class ProgramRunsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -19,14 +19,13 @@ class ProgramRunsView(LoginRequiredMixin, View):
         body = json.loads(request.body)
         program_id = body.get('program_id')
 
-        if ProgramRun.objects.filter(program_id=program_id):
-            program_run, timer_runs, program_run_id = selector_exist(program_id)
-        else:
-            program_timers = ProgramTimer.objects.filter(program_id=program_id).order_by('order_index').values()
-            print(program_timers)
-            # form = CreateForm(data)
+        if not ProgramRun.objects.filter(program_id=program_id).exists():
+            program = Program.objects.filter(id=program_id, user=request.user).first()
+            if program is None:
+                return JsonResponse({'error': 'invalid program'}, status=400)
+            create_runs_draft(user=request.user, program=program)
 
-        data = serialize_initial(program_run, timer_runs)
-        print(data)
-        url = reverse_lazy('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
+        program_run, timer_runs, program_run_id = selector_exist_runs(program_id)
+        data = serialize_exist_runs(program_run, timer_runs)
+        url = reverse('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
         return JsonResponse({'redirect_url': url, 'data': data})

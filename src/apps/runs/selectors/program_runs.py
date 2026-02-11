@@ -4,7 +4,7 @@ from ..models.program_run import ProgramRun
 from ..models.timer_run import TimerRun
 
 # 既存のprogram_runs, timer_runs検索
-def selector_exist(program_id):
+def selector_exist_runs(program_id):
     program_run = ProgramRun.objects.filter(program_id=program_id).values(
         'id',
         'program_id',

@@ -1,7 +1,7 @@
 # JSON形式整形ファイル
 
-# 初期画面表示
-def serialize_initial(program_run, timer_runs):
+# 既存runsの整形
+def serialize_exist_runs(program_run, timer_runs):
     data = {}
     data['program_run'] = program_run
     data['timer_runs'] = list(timer_runs)
