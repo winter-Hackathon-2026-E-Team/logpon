@@ -1,142 +1,129 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Timers</title>
-</head>
-<body>
-  <h1>Timers（CRUD 1画面）</h1>
+{% extends "common/base.html" %}
+{% load static %}
 
-  <!-- 作成 -->
-  <section>
-    <h2>新規作成</h2>
-    <form method="post" action="{% url 'timers:list' %}">
-      {% csrf_token %}
+{% block title %}タイマー作成・一覧{% endblock %}
 
-      {{ create_form.non_field_errors }}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/timers/timers.css' %}">
+{% endblock %}
 
-      <p>
-        {{ create_form.name.label_tag }}
-        {{ create_form.name }}
-        {{ create_form.name.errors }}
-      </p>
+{% block content %}
+<!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
+<div class="timers-page">
+    
+    <!-- 左画面 -->
+    <div class="left-disp">
 
-      <p>
-        {{ create_form.category.label_tag }}
-        {{ create_form.category }}
-        {{ create_form.category.errors }}
-      </p>
+        <h3>集中</h3>
+        <section class="focus-timers">
+            <div id="focusTimerList">
+            <!-- ここにバックエンドから取得した「集中」のタイマーを入れる -->
 
-      <p>
-        {{ create_form.duration_minutes.label_tag }}
-        {{ create_form.duration_minutes }}
-        {{ create_form.duration_minutes.errors }}
-      </p>
+            </div>
+            <div class="add-btn">
+            <button id="focusTimerAdd" type="button">
+                <iconify-icon icon="uil:plus" class="addIcon"></iconify-icon>
+            </button>
+            </div>
+        </section>
+    </div>
 
-      <p>
-        {{ create_form.sound.label_tag }}
-        {{ create_form.sound }}
-        {{ create_form.sound.errors }}
-        <small>（未選択OK）</small>
-      </p>
+    <!-- 右画面 -->
+    <div class="right-disp">
+        
+        <h3>休憩・リフレッシュ</h3>
+        <section class="other-timers">
+            <div id="otherTimerList">
+            <!-- ここにバックエンドから取得した「休憩・リフレッシュ」のタイマーを入れる -->
 
-      <p>
-        <label>
-          {{ create_form.is_active }} 有効
-        </label>
-      </p>
+            </div>
+            <div class="add-btn">
+            <button id="otherTimerAdd" type="button">
+                <iconify-icon icon="uil:plus" class="addIcon"></iconify-icon>
+            </button>
+            </div>
+        </section>
 
-      <button type="submit">作成</button>
-    </form>
-  </section>
+    </div>
+    
+</div>
 
-  <hr />
+<!-- タイマー作成・編集モーダル -->
+<section id="modal" class="modal" hidden>
+    <div id="modalOverlay">
+        <div id="modalArea">
+          
+            <div class="modal-close">
+                <button type="button" id="closeBtn" class="modal-close-btn">×</button>
+            </div>
+            <!-- 上の削除ボタンまでは共通 -->
+            <!-- 作成・編集用 -->
+            <section id="createUpdateContent" class="modal-section">
+                <h2 id="timerModalTitle" class="modal-title">タイマー作成</h2>
 
-  <!-- 一覧 -->
-  <section>
-    <h2>一覧</h2>
+                <div class="modal-form">
+                    <label for="timerNameInput" class="modal-label">タイマー名</label>
+                    <input id="timerNameInput" class="modal-input" name="timer_name">
+                </div>
+                <div class="modal-form">
+                    <label for="durationInput" class="modal-label">時間（分）</label>
+                    <input type="number" min="1" step="1" id="durationInput" class="modal-input" name="duration_sec">
+                </div>
+                <div class="modal-form">
+                    <label for="categoryInput" class="modal-label">カテゴリー</label>
+                    <select id="categoryInput" class="category-input" name="category">
+                        <!-- ここはJSでバックエンドから受け取ったcategoriesをoptionとして入れる -->
+                    </select>
+                </div>
+                <div class="modal-form">
+                    <label for="soundInput" class="modal-label">サウンド</label>
+                    <select id="soundInput" class="modal-input" name="sound_id">
+                        <!-- ここはJSでバックエンドから受け取ったsoundsをoptionとして入れる -->
+                        
+                    </select>
+                </div>
+                <div>
+                    <button class="btn modal-btn" type="button" id="timerSendBtn">作成</button>
+                </div>
+                <p id="formError" hidden>
+                    <!-- エラーがあった時のメッセージを入れる -->
+                </p>
+            </section>
+            <!-- ここまで作成・編集用 -->
 
-    <ul>
-      {% for row in rows %}
-        {% with t=row.timer f=row.form %}
-        <li>
-          {{ t.id }} / {{ t.name }}（{{ f.duration_minutes.value|default:t.duration_seconds }}） / {{ t.get_category_display }}
-          / sound={{ t.sound|default:"なし" }} / active={{ t.is_active }}
+            <!-- 削除用 -->
+            <section id="deleteContent" class="modal-section" hidden>
+                <h2 id="timerDeleteModalTitle" class="modal-title">タイマー削除</h2>
+                <!-- 削除前の確認用表示 -->
+                <div id="beforeDelete" hidden>
+                    <p class="delete-description">このタイマーを削除します。</p>
 
-          <button type="button" onclick="document.getElementById('edit-{{ t.id }}').showModal()">
-            編集
-          </button>
+                    <div>
+                        <p id="deleteTimerName"></p>
+                        <p id="deleteTimerDuration"></p>
+                        <p id="deleteTimerCategory"></p>
+                    </div>
 
-          <dialog id="edit-{{ t.id }}">
-            <h3>編集</h3>
-            <form method="post" action="{% url 'timers:edit' t.id %}">
-              {% csrf_token %}
+                    <div>
+                        <button class="btn modal-btn" type="button" id="timerDeleteBtn">削除</button>
+                    </div>
+                    <p id="deleteError" hidden></p>
+                </div>
+                
+                <!-- 削除完了表示 -->
+                <div id="afterDelete" hidden>
+                    <p class="deleted-description">タイマーを削除しました。</p>
+                    <div>
+                        <button class="btn modal-btn" type="button" id="deletedConfirm">閉じる</button>
+                    </div>
+                </div>
+            </section>
 
-              {{ f.non_field_errors }}
+        </div>
+    </div>
+</section>
 
-              <p>
-                {{ f.name.label_tag }}
-                {{ f.name }}
-                {{ f.name.errors }}
-              </p>
+<!-- JSファイル -->
+ <script src="{% static 'js/timers/timers.js' %}" defer></script>
 
-              <p>
-                {{ f.category.label_tag }}
-                {{ f.category }}
-                {{ f.category.errors }}
-              </p>
-
-              <p>
-                {{ f.duration_minutes.label_tag }}
-                {{ f.duration_minutes }}
-                {{ f.duration_minutes.errors }}
-              </p>
-
-              <p>
-                {{ f.sound.label_tag }}
-                {{ f.sound }}
-                {{ f.sound.errors }}
-                <small>（未選択OK）</small>
-              </p>
-
-              <p>
-                <label>{{ f.is_active }} 有効</label>
-              </p>
-
-              <button type="submit">更新</button>
-              <button type="button" onclick="document.getElementById('edit-{{ t.id }}').close()">閉じる</button>
-            </form>
-          </dialog>
-
-          <button type="button" onclick="document.getElementById('del-{{ t.id }}').showModal()">
-            削除
-          </button>
-
-          <dialog id="del-{{ t.id }}">
-            <p>削除しますか？（ID: {{ t.id }} / {{ t.name }}）</p>
-
-            <form method="post" action="{% url 'timers:delete' t.id %}">
-                {% csrf_token %}
-                <button type="submit">削除する</button>
-                <button type="button" onclick="document.getElementById('del-{{ t.id }}').close()">やめる</button>
-             </form>
-          </dialog>
-
-        </li>
-        {% endwith %}
-      {% empty %}
-        <li>まだタイマーがありません</li>
-      {% endfor %}
-    </ul>
-  </section>
-
-  {% if open_edit_id %}
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const dlg = document.getElementById("edit-{{ open_edit_id }}");
-      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
-    });
-  </script>
-  {% endif %}
-</body>
-</html>
+{% endblock %}
