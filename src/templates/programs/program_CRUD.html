@@ -1,72 +1,284 @@
-{# src/templates/programs/program_CRUD.html #}
+{% load static %}
 <!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <title>Programs（CRUD 1画面）</title>
-  </head>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Programs</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
+    header { padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+    .container { padding: 18px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 
-  <body>
-    <h1>Programs（CRUD 1画面）</h1>
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; background: #fff; }
+    .card h2, .card h3 { margin: 0 0 10px 0; }
+    .muted { color: #6b7280; font-size: 12px; }
 
-    {# messages を使っているなら表示（任意） #}
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row > * { margin: 0; }
+
+    select, input, button, textarea {
+      font: inherit;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+    }
+    button { cursor: pointer; }
+    button.primary { background: #111827; color: #fff; border-color: #111827; }
+    button.danger { background: #fff; color: #b91c1c; border-color: #fca5a5; }
+    button.small { padding: 6px 8px; font-size: 12px; border-radius: 8px; }
+
+    .messages { list-style: none; padding-left: 0; margin: 0; }
+    .messages li { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; margin: 8px 0; }
+
+    .pt-list { list-style: none; padding-left: 0; margin: 10px 0; }
+    .pt-item { display:flex; align-items:center; justify-content:space-between; gap: 10px;
+               padding: 8px 10px; border: 1px dashed #9ca3af; border-radius: 10px; margin: 8px 0; }
+    .pt-item .left { display:flex; gap: 10px; align-items:center; }
+    .badge { font-size: 12px; padding: 2px 8px; border: 1px solid #e5e7eb; border-radius: 999px; color: #374151; }
+
+    .split-head { display:flex; justify-content:space-between; align-items:flex-start; gap: 12px; }
+    .right-head { display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; }
+    .timer-table { width: 100%; border-collapse: collapse; }
+    .timer-table th, .timer-table td { border-bottom: 1px solid #f3f4f6; padding: 8px 6px; text-align: left; }
+    .timer-table th { font-size: 12px; color: #6b7280; }
+    .timer-actions { display:flex; justify-content:flex-end; }
+
+    /* 追加：作成（左）＋編集（右） */
+    .program-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: start;
+      margin-top: 14px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .program-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <strong>Programs</strong>
+      <span class="muted">/programs（1画面運用）</span>
+    </div>
+  </header>
+
+  <div class="container">
     {% if messages %}
-      <div class="messages">
-        <ul>
-          {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+      <ul class="messages">
+        {% for m in messages %}
+          <li>{{ m }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
 
-    <!-- 新規作成 -->
-    <section>
-      <h2>新規作成</h2>
-      <form method="post" action="{% url 'programs:list' %}">
-        {% csrf_token %}
-        {{ create_form.non_field_errors }}
-        {{ create_form.as_p }}
-        <button type="submit">作成</button>
-      </form>
-    </section>
+    <div class="grid">
+      <!-- =========================
+           LEFT: プログラム選択 + 作成/編集 + 選択中プログラム内のタイマー一覧
+           ========================= -->
+      <div class="card">
+        <div class="split-head">
+          <div>
+            <h2>プログラム</h2>
+            <div class="muted">左上で選択 → 下にそのプログラムのタイマー一覧</div>
+          </div>
+        </div>
 
-    <hr />
+        <!-- プログラム選択 -->
+        <div class="row" style="margin-top:10px;">
+          <label class="muted" for="program-select">選択</label>
+          <select id="program-select">
+            {% for row in rows %}
+              <option value="{{ row.program.id }}">{{ row.program.program_name }}</option>
+            {% empty %}
+              <option value="" disabled selected>プログラムがありません（下で作成）</option>
+            {% endfor %}
+          </select>
 
-    <!-- 一覧 + 編集 + 削除 -->
-    <section>
-      <h2>一覧</h2>
+          <span class="muted">※並び替えはドラッグ</span>
+        </div>
 
-      <ul>
-        {% for row in rows %}
-          <li style="margin-bottom: 16px;">
-            <div>
-              <strong>{{ row.program.program_name }}</strong>
-              <span>（id: {{ row.program.id }}）</span>
-            </div>
+        <!-- 作成（左） + 編集（右） -->
+        <div class="program-actions">
 
-            <!-- 編集（同一画面） -->
-            <div style="margin-top: 8px;">
+          <!-- 左：プログラム作成（常に表示） -->
+          <div class="card" style="padding:12px; border-radius:10px; background:#fafafa;">
+            <h3 style="margin:0 0 8px 0;">プログラム作成</h3>
+            <form method="post" action="{% url 'programs:list' %}">
+              {% csrf_token %}
+              {{ create_form.non_field_errors }}
+              {{ create_form.as_p }}
+              <button type="submit" class="primary">作成</button>
+            </form>
+          </div>
+
+          <!-- 右：選択中プログラム編集（選択に応じて表示切替） -->
+          {% for row in rows %}
+            <div class="card program-edit-panel"
+                 data-program-id="{{ row.program.id }}"
+                 style="display:none; padding:12px; border-radius:10px; background:#fafafa;">
+              <div class="split-head">
+                <div>
+                  <h3 style="margin:0 0 6px 0;">プログラム編集</h3>
+                  <div class="muted">名前の変更 / 削除</div>
+                </div>
+              </div>
+
               <form method="post" action="{% url 'programs:edit' row.program.id %}">
                 {% csrf_token %}
                 {{ row.form.non_field_errors }}
                 {{ row.form.as_p }}
-                <button type="submit">更新</button>
+                <button type="submit" class="primary">更新</button>
               </form>
-            </div>
 
-            <!-- 削除 -->
-            <div style="margin-top: 8px;">
-              <form method="post" action="{% url 'programs:delete' row.program.id %}">
+              <form method="post" action="{% url 'programs:delete' row.program.id %}" style="margin-top:8px;">
                 {% csrf_token %}
-                <button type="submit" onclick="return confirm('削除しますか？');">削除</button>
+                <button type="submit" class="danger"
+                        onclick="return confirm('このプログラムを削除しますか？');">削除</button>
               </form>
             </div>
-          </li>
-        {% empty %}
-          <li>まだありません</li>
+          {% empty %}
+            <div class="card" style="padding:12px; border-radius:10px; background:#fafafa;">
+              <h3 style="margin:0 0 6px 0;">プログラム編集</h3>
+              <p class="muted">プログラムがありません</p>
+            </div>
+          {% endfor %}
+
+        </div>
+
+        <!-- 各プログラムの詳細（選択されたものだけ表示） -->
+        {% for row in rows %}
+          <div class="program-panel" data-program-id="{{ row.program.id }}" style="display:none; margin-top:14px;">
+
+            <!-- ProgramTimer 一覧 -->
+            <h3 style="margin-top:0;">選択中プログラム内のタイマー</h3>
+
+            <ul id="pt-list-{{ row.program.id }}" class="pt-list">
+              {% for pt in row.program_timers %}
+                <li class="pt-item" data-pt-id="{{ pt.id }}">
+                  <div class="left">
+                    <span class="badge">{{ pt.order_index }}</span>
+                    <span>{{ pt.timer.name }}</span>
+                  </div>
+
+                  <form method="post" action="{% url 'program_timers:delete' pt.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="small">削除</button>
+                  </form>
+                </li>
+              {% empty %}
+                <li class="muted" style="margin-top:8px;">まだタイマーが入っていません（右側から追加）</li>
+              {% endfor %}
+            </ul>
+
+            <!-- 並び替え保存 -->
+            <form method="post"
+                  action="{% url 'program_timers:reorder' row.program.id %}"
+                  onsubmit="setOrder({{ row.program.id }});">
+              {% csrf_token %}
+              <input type="hidden" name="order" id="order-input-{{ row.program.id }}">
+              <button type="submit" class="primary">並び順を保存</button>
+            </form>
+
+          </div>
         {% endfor %}
-      </ul>
-    </section>
-  </body>
+      </div>
+
+      <!-- =========================
+           RIGHT: 作成済みタイマー一覧（選択中プログラムへ追加）
+           ========================= -->
+      <div class="card">
+        <div class="right-head">
+          <div>
+            <h2>タイマー一覧</h2>
+            <div class="muted">右側：作成済みタイマー → 選択中プログラムへ追加</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          {% if my_timers %}
+            <table class="timer-table">
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>カテゴリ</th>
+                  <th style="width:110px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in my_timers %}
+                  <tr>
+                    <td>{{ t.name }}</td>
+                    <td class="muted">{{ t.category }}</td>
+                    <td class="timer-actions">
+                      <!-- 追加ボタン：選択中プログラムに追加（actionはJSで差し替え） -->
+                      <form method="post"
+                            data-add-form
+                            data-action-template="{% url 'program_timers:create' 0 %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="timer_id" value="{{ t.id }}">
+                        <button type="submit" class="small primary">追加</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="muted" style="margin-top:10px;">
+              ※「追加」は選択中プログラムに末尾追加されます
+            </div>
+          {% else %}
+            <p class="muted">タイマーがありません。先に /timers で作成してください。</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script>
+    function showProgram(programId){
+      // タイマー一覧パネル + 編集パネルを同時に切替
+      document.querySelectorAll(".program-panel, .program-edit-panel").forEach(el => {
+        el.style.display = (el.dataset.programId === String(programId)) ? "block" : "none";
+      });
+
+      // 右側の「追加」フォームのactionを選択中プログラムに合わせる
+      document.querySelectorAll("form[data-add-form]").forEach(f => {
+        const tpl = f.getAttribute("data-action-template"); // .../program_timers/0/
+        f.action = tpl.replace("/0/", `/${programId}/`);
+      });
+    }
+
+    function setOrder(programId){
+      const items = document.querySelectorAll(`#pt-list-${programId} [data-pt-id]`);
+      const ids = Array.from(items).map(el => el.dataset.ptId).join(",");
+      const input = document.getElementById(`order-input-${programId}`);
+      if (input) input.value = ids;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Sortableを全部のリストに付与（表示中だけ触る想定）
+      document.querySelectorAll("ul.pt-list").forEach(ul => {
+        new Sortable(ul, { animation: 150 });
+      });
+
+      const sel = document.getElementById("program-select");
+      if (!sel) return;
+
+      // 初期選択：先頭
+      const first = sel.value;
+      if (first) showProgram(first);
+
+      sel.addEventListener("change", (e) => {
+        const pid = e.target.value;
+        if (pid) showProgram(pid);
+      });
+    });
+  </script>
+</body>
 </html>
