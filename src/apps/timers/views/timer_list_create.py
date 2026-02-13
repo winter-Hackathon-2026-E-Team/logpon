@@ -9,7 +9,7 @@ from apps.timers.models.sound import Sound
 
 
 class TimerListCreateView(LoginRequiredMixin, TimerRowsMixin, View):
-    template_name = "timers/timer_CRUD.html"
+    template_name = "timers/timers.html"
     login_url = "users:login"
     redirect_field_name = "next"
 
