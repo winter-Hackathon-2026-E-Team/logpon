@@ -44,9 +44,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_bootstrap5',
     'apps.users',
+<<<<<<< Updated upstream
     'apps.runs',
     'apps.timers',
     'apps.programs',
+=======
+    'apps.timers',
+>>>>>>> Stashed changes
 ]
 
 MIDDLEWARE = [

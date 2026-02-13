@@ -9,7 +9,7 @@ from apps.timers.models import Timer
 
 
 class ProgramEditView(LoginRequiredMixin, View):
-    template_name = "programs/program_CRUD.html"
+    template_name = "programs/programs.html"
     login_url = "users:login"
     redirect_field_name = "next"
 
