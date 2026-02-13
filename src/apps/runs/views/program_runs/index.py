@@ -1,0 +1,11 @@
+# /program-runs/のGET（表示）, program_idのPOST（draft作成）
+from django.shortcuts import render, redirect
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class ProgramRunsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'runs/program-runs.html')
+
+    def post(self, request, *args, **kwargs):
+        pass

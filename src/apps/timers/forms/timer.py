@@ -1,11 +1,10 @@
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-
+from decimal import Decimal, ROUND_HALF_UP
 from django import forms
+
 from apps.timers.models import Timer
 
 
 class TimerForm(forms.ModelForm):
-    # 画面入力は「分」(DBは秒)
     duration_minutes = forms.DecimalField(
         label="分",
         min_value=Decimal("0.1"),
@@ -17,49 +16,32 @@ class TimerForm(forms.ModelForm):
 
     class Meta:
         model = Timer
-        fields = ["name", "category", "sound", "is_active"]
-        # sound は blank=True なので未選択OKの<select>になる
+        # duration_seconds はフォームに出さず、duration_minutes から計算して保存する
+        fields = ["name", "category", "duration_minutes", "sound"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # 編集画面用：DBの秒→分にして初期表示
+        if self.instance and self.instance.pk and self.instance.duration_seconds is not None:
+            self.fields["duration_minutes"].initial = (
+                Decimal(self.instance.duration_seconds) / Decimal("60")
+            ).quantize(Decimal("0.1"))
 
-        # 編集時：秒→分を初期値に
-        if self.instance and self.instance.pk:
-            minutes = Decimal(self.instance.duration_seconds) / Decimal("60")
-            self.fields["duration_minutes"].initial = minutes.quantize(
-                Decimal("0.1"), rounding=ROUND_HALF_UP
-            )
+    def save(self, *, user=None, commit=True):
+        obj: Timer = super().save(commit=False)
 
-    def clean_name(self):
-        name = (self.cleaned_data.get("name") or "").strip()
-        if not name:
-            raise forms.ValidationError("名前が空です")
-        if len(name) > 50:
-            raise forms.ValidationError("名前は50文字以内です")
-        return name
+        minutes = self.cleaned_data["duration_minutes"]
+        seconds = (minutes * Decimal("60")).to_integral_value(rounding=ROUND_HALF_UP)
+        obj.duration_seconds = int(seconds)
 
-    def clean_duration_minutes(self):
-        raw = self.cleaned_data["duration_minutes"]
-        max_sec = 24 * 60 * 60  # 24時間
+        # 作成時は user 必須、更新時は既存の obj.user を維持
+        if obj.pk is None:
+            if user is None:
+                raise TypeError("TimerForm.save() missing required keyword-only argument: 'user'")
+            obj.user = user
 
-        try:
-            seconds = int((raw * Decimal("60")).to_integral_value(rounding=ROUND_HALF_UP))
-        except (InvalidOperation, ValueError):
-            raise forms.ValidationError("分の値が不正です")
-
-        if seconds <= 0:
-            raise forms.ValidationError("分は0より大きい値にしてください")
-
-        if seconds > max_sec:
-            raise forms.ValidationError("分は24時間以内にしてください")
-
-        self._duration_seconds = seconds
-        return raw
-
-    def save(self, commit=True):
-        obj = super().save(commit=False)
-        obj.duration_seconds = getattr(self, "_duration_seconds", obj.duration_seconds)
         if commit:
             obj.save()
+            self.save_m2m()
         return obj
 
