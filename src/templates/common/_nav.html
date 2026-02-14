@@ -6,12 +6,12 @@
     <li>
         <!-- programsのurls.pyができたらhrefの中を入れる -->
         <a class="{% if request.resolver_match.url_name == 'programs' %}is-active{% endif %}" 
-        href="">プログラム<br>作成・一覧</a>
+        href="{% url 'programs:list' %}">プログラム<br>作成・一覧</a>
     </li>
     <li>
         <!-- timersのurls.pyができたらhrefの中を入れる -->
         <a class="{% if request.resolver_match.url_name == 'timers' %}is-active{% endif %}" 
-        href="">タイマー<br>作成・一覧</a>
+        href="{% url 'timers:list' %}">タイマー<br>作成・一覧</a>
     </li>
     <li>
         <a class="{% if request.resolver_match.url_name == 'records' %}is-active{% endif %}" 
