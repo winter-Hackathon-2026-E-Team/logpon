@@ -18,7 +18,28 @@
         <section class="focus-timers">
             <div id="focusTimerList">
             <!-- ここにバックエンドから取得した「集中」のタイマーを入れる -->
-
+            {% for row in rows %}
+                {% with t=row.timer %}
+                {% if t.get_category_display == "集中" %}
+                    <div class="oneTimer"
+                        data-timer-id="{{ t.id }}"
+                        data-timer-name="{{ t.name }}"
+                        data-duration-sec="{{ t.duration_seconds }}"
+                        data-category-value="{{ t.category }}"
+                        data-category-label="{{ t.get_category_display }}"
+                        data-sound-value="{{ t.sound_id|default:'' }}"
+                        data-is-active="{{ t.is_active|yesno:'1,0' }}">
+                    <p class="timerName">{{ t.name }}</p>
+                    <p class="duration">{% widthratio t.duration_seconds 60 1 %}分</p>
+                    <button class="delete-btn" type="button">
+                        <iconify-icon icon="iconamoon:trash" class="deleteIcon"></iconify-icon>
+                    </button>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            {% empty %}
+                <p class="empty">タイマーが登録されていません</p>
+            {% endfor %}
             </div>
             <div class="add-btn">
             <button id="focusTimerAdd" type="button">
@@ -35,7 +56,28 @@
         <section class="other-timers">
             <div id="otherTimerList">
             <!-- ここにバックエンドから取得した「休憩・リフレッシュ」のタイマーを入れる -->
-
+            {% for row in rows %}
+                {% with t=row.timer %}
+                {% if t.get_category_display != "集中" %}
+                    <div class="oneTimer"
+                        data-timer-id="{{ t.id }}"
+                        data-timer-name="{{ t.name }}"
+                        data-duration-sec="{{ t.duration_seconds }}"
+                        data-category-value="{{ t.category }}"
+                        data-category-label="{{ t.get_category_display }}"
+                        data-sound-value="{{ t.sound_id|default:'' }}"
+                        data-is-active="{{ t.is_active|yesno:'1,0' }}">
+                    <p class="timerName">{{ t.name }}</p>
+                    <p class="duration">{% widthratio t.duration_seconds 60 1 %}分</p>
+                    <button class="delete-btn" type="button">
+                        <iconify-icon icon="iconamoon:trash" class="deleteIcon"></iconify-icon>
+                    </button>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            {% empty %}
+                <p class="empty">タイマーが登録されていません</p>
+            {% endfor %}
             </div>
             <div class="add-btn">
             <button id="otherTimerAdd" type="button">
@@ -61,33 +103,72 @@
             <section id="createUpdateContent" class="modal-section">
                 <h2 id="timerModalTitle" class="modal-title">タイマー作成</h2>
 
-                <div class="modal-form">
-                    <label for="timerNameInput" class="modal-label">タイマー名</label>
-                    <input id="timerNameInput" class="modal-input" name="timer_name">
-                </div>
-                <div class="modal-form">
-                    <label for="durationInput" class="modal-label">時間（分）</label>
-                    <input type="number" min="1" step="1" id="durationInput" class="modal-input" name="duration_sec">
-                </div>
-                <div class="modal-form">
-                    <label for="categoryInput" class="modal-label">カテゴリー</label>
-                    <select id="categoryInput" class="category-input" name="category">
-                        <!-- ここはJSでバックエンドから受け取ったcategoriesをoptionとして入れる -->
-                    </select>
-                </div>
-                <div class="modal-form">
-                    <label for="soundInput" class="modal-label">サウンド</label>
-                    <select id="soundInput" class="modal-input" name="sound_id">
-                        <!-- ここはJSでバックエンドから受け取ったsoundsをoptionとして入れる -->
-                        
-                    </select>
-                </div>
-                <div>
-                    <button class="btn modal-btn" type="button" id="timerSendBtn">作成</button>
-                </div>
-                <p id="formError" hidden>
-                    <!-- エラーがあった時のメッセージを入れる -->
-                </p>
+                <!-- 作成用フォーム -->
+                <form id="createForm" method="post" action="{% url 'timers:list' %}">
+                    {% csrf_token %}
+                    {{ create_form.non_field_errors }}
+
+                    <div class="modal-form">
+                        {{ create_form.name.label_tag }}
+                        {{ create_form.name }}
+                        {{ create_form.name.errors }}
+                    </div>
+                    <div class="modal-form">
+                        {{ create_form.duration_minutes.label_tag }}
+                        {{ create_form.duration_minutes }}
+                        {{ create_form.duration_minutes.errors }}
+                    </div>
+                    <div class="modal-form">
+                        {{ create_form.category.label_tag }}
+                        {{ create_form.category }}
+                        {{ create_form.category.errors }}
+                    </div>
+                    <div class="modal-form">
+                        {{ create_form.sound.label_tag }}
+                        {{ create_form.sound }}
+                        {{ create_form.sound.errors }}
+                        <small>（未選択OK）</small>
+                    </div>
+                    <div>
+                        <button class="btn modal-btn" type="submit" id="timerSendBtn">作成</button>
+                    </div>
+                    <p id="formError" hidden>
+                        <!-- エラーがあった時のメッセージを入れる -->
+                    </p>
+                </form>
+
+                <!-- 編集用フォーム -->
+                <form id="editForm" method="post" action="" hidden
+                    data-edit-action-template="{% url 'timers:edit' 0 %}">
+                    {% csrf_token %}
+
+                    <div class="modal-form">
+                        <label for="edit-name">タイマー名</label>
+                        <input id="edit-name" name="name">
+                    </div>
+
+                    <div class="modal-form">
+                        <label for="edit-duration">時間（分）</label>
+                        <input id="edit-duration" name="duration_minutes" type="number" min="1" step="1">
+                    </div>
+
+                    <div class="modal-form">
+                        <label for="edit-category">カテゴリー</label>
+                        <select id="edit-category" name="category"></select>
+                    </div>
+
+                    <div class="modal-form">
+                        <label for="edit-sound">サウンド</label>
+                        <select id="edit-sound" name="sound"></select>
+                        <small>（未選択OK）</small>
+                    </div>
+
+                    <div class="modal-form">
+                        <label><input id="edit-is-active" type="checkbox" name="is_active"> 有効</label>
+                    </div>
+
+                    <button class="btn modal-btn" type="submit">更新</button>
+                </form>
             </section>
             <!-- ここまで作成・編集用 -->
 
@@ -104,19 +185,15 @@
                         <p id="deleteTimerCategory"></p>
                     </div>
 
-                    <div>
-                        <button class="btn modal-btn" type="button" id="timerDeleteBtn">削除</button>
-                    </div>
+                    <form id="deleteForm" method="post" action=""
+                     data-delete-action-template="{% url 'timers:delete' 0 %}">
+                    {% csrf_token %}
+                        <button class="btn modal-btn" type="submit">削除</button>
+                    </form>
+                    
                     <p id="deleteError" hidden></p>
                 </div>
                 
-                <!-- 削除完了表示 -->
-                <div id="afterDelete" hidden>
-                    <p class="deleted-description">タイマーを削除しました。</p>
-                    <div>
-                        <button class="btn modal-btn" type="button" id="deletedConfirm">閉じる</button>
-                    </div>
-                </div>
             </section>
 
         </div>
@@ -124,6 +201,14 @@
 </section>
 
 <!-- JSファイル -->
+<script id="soundMap" type="application/json">
+{
+  {% for s in sounds %}
+    "{{ s.id }}": "{{ s.file_path|escapejs }}"{% if not forloop.last %},{% endif %}
+  {% endfor %}
+}
+</script>
+
  <script src="{% static 'js/timers/timers.js' %}" defer></script>
 
 {% endblock %}

@@ -4,7 +4,7 @@
     margin: 0 auto;
     padding: 0 10px;
     justify-content: center;
-    gap: 84px;
+    gap: 40px;
     align-items: stretch;
     flex: 1;
 }
@@ -59,6 +59,13 @@
 
 .oneTimer p {
     margin: 0;
+}
+
+.timerName {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
 }
 
 .duration {
@@ -117,6 +124,16 @@
 
 .modal-btn {
     margin: 20px 0;
+}
+
+#createForm, #editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+form label {
+    font-size: 0.875rem;
 }
 
 #beforeDelete {
