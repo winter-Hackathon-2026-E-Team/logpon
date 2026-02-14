@@ -7,7 +7,7 @@ from apps.timers.forms.timer import TimerForm
 from apps.timers.views.mixins import TimerRowsMixin
 
 class TimerDeleteView(LoginRequiredMixin, TimerRowsMixin, View):
-    template_name = "timers/timer_CRUD.html"
+    template_name = "timers/timers.html"
 
     def post(self, request, timer_id: int, *args, **kwargs):
         deleted, _ = Timer.objects.filter(id=timer_id, user=request.user).delete()
