@@ -27,8 +27,7 @@
                         data-duration-sec="{{ t.duration_seconds }}"
                         data-category-value="{{ t.category }}"
                         data-category-label="{{ t.get_category_display }}"
-                        data-sound-value="{{ t.sound_id|default:'' }}"
-                        data-is-active="{{ t.is_active|yesno:'1,0' }}">
+                        data-sound-value="{{ t.sound_id|default:'' }}">
                     <p class="timerName">{{ t.name }}</p>
                     <p class="duration">{% widthratio t.duration_seconds 60 1 %}分</p>
                     <button class="delete-btn" type="button">
@@ -65,8 +64,7 @@
                         data-duration-sec="{{ t.duration_seconds }}"
                         data-category-value="{{ t.category }}"
                         data-category-label="{{ t.get_category_display }}"
-                        data-sound-value="{{ t.sound_id|default:'' }}"
-                        data-is-active="{{ t.is_active|yesno:'1,0' }}">
+                        data-sound-value="{{ t.sound_id|default:'' }}">
                     <p class="timerName">{{ t.name }}</p>
                     <p class="duration">{% widthratio t.duration_seconds 60 1 %}分</p>
                     <button class="delete-btn" type="button">
@@ -161,10 +159,6 @@
                         <label for="edit-sound">サウンド</label>
                         <select id="edit-sound" name="sound"></select>
                         <small>（未選択OK）</small>
-                    </div>
-
-                    <div class="modal-form">
-                        <label><input id="edit-is-active" type="checkbox" name="is_active"> 有効</label>
                     </div>
 
                     <button class="btn modal-btn" type="submit">更新</button>

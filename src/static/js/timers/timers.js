@@ -51,8 +51,6 @@ const editName = document.getElementById("edit-name");
 const editCategory = document.getElementById("edit-category");
 const editDuration = document.getElementById("edit-duration");
 const editSound = document.getElementById("edit-sound");
-const editIsActive = document.getElementById("edit-is-active");
-// 作成フォームのカテゴリーの選択肢のDOM
 const createCategorySelect = createForm.querySelector('[name="create-category"]');
 // 作成フォームのサウンドの選択肢のDOM
 const createSoundSelect = createForm.querySelector('[name="create-sound"]');
@@ -91,7 +89,6 @@ function readTimerFromCard(timerEl) {
     category_value: timerEl.dataset.categoryValue ?? "", // data-category-value
     category_label: timerEl.dataset.categoryLabel ?? "", // data-category-label
     sound_value: timerEl.dataset.soundValue ?? "",       // data-sound-value
-    is_active: (timerEl.dataset.isActive === "1"),       // data-is-active
     
   };
 }
@@ -111,7 +108,6 @@ function applyEditFieldNames(timerId) {
   editCategory.name = `${prefix}category`;
   editDuration.name = `${prefix}duration_minutes`;
   editSound.name = `${prefix}sound`;
-  editIsActive.name = `${prefix}is_active`;
 }
 
 
@@ -161,7 +157,6 @@ function setModalMode (mode, payload = null) {
     if (editDuration) editDuration.value = "";
     if (editCategory) editCategory.value = "";
     if (editSound) editSound.value = "";
-    if (editIsActive) editIsActive.checked = false;
 
     // 削除表示リセット
     deleteTimerName.textContent = "";
@@ -207,7 +202,6 @@ function setModalMode (mode, payload = null) {
         if (editDuration) editDuration.value = secToMin(t.duration_sec);
         if (editCategory) editCategory.value = t.category_value;
         if (editSound) editSound.value = t.sound_value; // ""なら未選択
-        if (editIsActive) editIsActive.checked = !!t.is_active;
 
     }
 
