@@ -23,4 +23,5 @@ urlpatterns = [
     path('', include('apps.runs.urls')),
     path("timers/", include("apps.timers.urls")),
     path("programs/", include("apps.programs.urls")),
+    path("program_timers/", include("apps.programs.program_timers_urls")),
 ]
