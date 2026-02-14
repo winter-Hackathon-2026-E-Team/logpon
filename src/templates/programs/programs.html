@@ -1,0 +1,232 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}Programs{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 20px auto; padding: 0 16px;">
+
+
+  {% if messages %}
+    <div style="margin: 10px 0 16px;">
+      {% for message in messages %}
+        <div style="padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start;">
+
+    <!-- 左：Program一覧＋作成 -->
+    <section style="border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
+      <h2 style="margin:0 0 10px; font-size: 18px;">プログラム一覧</h2>
+
+      <!-- 作成 -->
+      <div style="border:1px solid #f3f4f6; border-radius:10px; padding:12px; margin-bottom:12px;">
+        <div style="font-weight: 600; margin-bottom:8px;">新規作成</div>
+        <form method="post" action="{% url 'programs:list' %}">
+          {% csrf_token %}
+          {{ create_form.non_field_errors }}
+
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="flex: 1;">
+              {{ create_form.program_name }}
+              {{ create_form.program_name.errors }}
+            </div>
+            <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
+              作成
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {% if rows %}
+        <ul style="list-style:none; padding:0; margin:0; display:grid; gap:10px;">
+          {% for r in rows %}
+            {% with p=r.program f=r.form %}
+              <li style="border:1px solid #e5e7eb; border-radius:10px; padding:12px; background: {% if p.id == selected_program_id %}#f9fafb{% else %}#fff{% endif %};">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                  <div>
+                    <div style="font-weight:700;">{{ p.program_name }}</div>
+                    <div style="color:#6b7280; font-size:12px;">ID: {{ p.id }}</div>
+                  </div>
+
+                  <a href="{% url 'programs:list' %}?selected={{ p.id }}"
+                     style="font-size:12px; text-decoration:none; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">
+                    選択
+                  </a>
+                </div>
+
+                <!-- 編集 -->
+                <div style="margin-top:10px;">
+                  <form method="post" action="{% url 'programs:edit' p.id %}" style="display:flex; gap:8px; align-items:center;">
+                    {% csrf_token %}
+                    {{ f.non_field_errors }}
+                    <div style="flex:1;">
+                      {{ f.program_name }}
+                      {{ f.program_name.errors }}
+                    </div>
+                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
+                      保存
+                    </button>
+                  </form>
+                </div>
+
+                <!-- 削除 -->
+                <div style="margin-top:10px;">
+                  <form method="post" action="{% url 'programs:delete' p.id %}" onsubmit="return confirm('削除しますか？');">
+                    {% csrf_token %}
+                    <button type="submit" style="padding:8px 10px; border:1px solid #ef4444; color:#ef4444; border-radius:8px; background:transparent;">
+                      削除
+                    </button>
+                  </form>
+                </div>
+              </li>
+            {% endwith %}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="margin:0; color:#6b7280;">まだプログラムがありません。</p>
+      {% endif %}
+    </section>
+
+    <!-- 右：選択中Programの中身（ProgramTimer） -->
+    <section style="border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
+      <h2 style="margin:0 0 10px; font-size: 18px;">選択中プログラム</h2>
+
+      {% if not selected_program_id %}
+        <p style="margin:0; color:#6b7280;">左の「選択」からプログラムを選んでください。</p>
+      {% else %}
+
+        {% for r in rows %}
+          {% if r.program.id == selected_program_id %}
+            {% with program=r.program pts=r.program_timers %}
+              <div style="margin-bottom:12px; padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
+                <div style="font-weight:700;">{{ program.program_name }}</div>
+                <div style="color:#6b7280; font-size:12px;">Program ID: {{ program.id }}</div>
+              </div>
+
+              <!-- Timer追加 -->
+              <div style="margin-bottom:12px; padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
+                <div style="font-weight:600; margin-bottom:8px;">タイマーを追加</div>
+
+                <form method="post" action="/program_timers/{{ program.id }}/">
+                  {% csrf_token %}
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <select name="timer_id" style="flex:1; padding:8px; border:1px solid #e5e7eb; border-radius:8px;">
+                      <option value="">選択してください</option>
+                      {% for t in my_timers %}
+                        <option value="{{ t.id }}">{{ t.name }}（{{ t.category }} / {{ t.duration_seconds }}秒）</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
+                      追加
+                    </button>
+                  </div>
+                </form>
+
+                <p style="margin:8px 0 0; color:#6b7280; font-size:12px;">
+                  ※ action のURLが違う場合はここだけ合わせてください（ProgramTimerCreateView）。
+                </p>
+              </div>
+
+              <!-- ProgramTimer一覧 -->
+              <div style="padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
+                <div style="font-weight:600; margin-bottom:8px;">登録タイマー</div>
+
+                {% if pts %}
+                  <ul id="ptList" style="list-style:none; padding:0; margin:0; display:grid; gap:8px;">
+                    {% for pt in pts %}
+                      <li data-ptid="{{ pt.id }}" style="display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:10px; padding:10px;">
+                        <div>
+                          <div style="font-weight:600;">
+                            {{ pt.timer.name }}
+                            <span style="color:#6b7280; font-weight:400; font-size:12px;">
+                              （order={{ pt.order_index }} / PT={{ pt.id }}）
+                            </span>
+                          </div>
+                          <div style="color:#6b7280; font-size:12px;">
+                            {{ pt.timer.category }} / {{ pt.timer.duration_seconds }}秒
+                          </div>
+                        </div>
+
+                        <div style="display:flex; gap:6px; align-items:center;">
+                          <button type="button" class="upBtn" style="padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">↑</button>
+                          <button type="button" class="downBtn" style="padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">↓</button>
+
+                          <form method="post" action="/program_timers/{{ pt.id }}/delete/" onsubmit="return confirm('このタイマーを削除しますか？');">
+                            {% csrf_token %}
+                            <button type="submit" style="padding:6px 8px; border:1px solid #ef4444; color:#ef4444; border-radius:8px; background:transparent;">
+                              削除
+                            </button>
+                          </form>
+                        </div>
+                      </li>
+                    {% endfor %}
+                  </ul>
+
+                  <!-- 並び順保存 -->
+                  <form method="post" action="/program_timers/{{ program.id }}/reorder/" style="margin-top:10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="order" id="orderInput" value="">
+                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
+                      並び順を保存
+                    </button>
+                    <span style="margin-left:8px; color:#6b7280; font-size:12px;">
+                      ※ 上下で並べ替え → 保存（ProgramTimerReorderView）
+                    </span>
+                  </form>
+
+                {% else %}
+                  <p style="margin:0; color:#6b7280;">まだタイマーが追加されていません。</p>
+                {% endif %}
+              </div>
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+<script>
+  // 簡易並び替え：上下ボタンでDOMを入れ替えて、submit時に "id,id,id" を order に詰める
+  (function () {
+    const list = document.getElementById("ptList");
+    const orderInput = document.getElementById("orderInput");
+    if (!list || !orderInput) return;
+
+    function syncOrder() {
+      const ids = Array.from(list.querySelectorAll("li[data-ptid]"))
+        .map(li => li.getAttribute("data-ptid"));
+      orderInput.value = ids.join(",");
+    }
+
+    list.addEventListener("click", (e) => {
+      const up = e.target.closest(".upBtn");
+      const down = e.target.closest(".downBtn");
+      if (!up && !down) return;
+
+      const li = e.target.closest("li[data-ptid]");
+      if (!li) return;
+
+      if (up) {
+        const prev = li.previousElementSibling;
+        if (prev) list.insertBefore(li, prev);
+      }
+      if (down) {
+        const next = li.nextElementSibling;
+        if (next) list.insertBefore(next, li);
+      }
+      syncOrder();
+    });
+
+    // 初期同期（今の表示順を入れる）
+    syncOrder();
+  })();
+</script>
+{% endblock %}
+
