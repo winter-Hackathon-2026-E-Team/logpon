@@ -5,34 +5,39 @@ from apps.timers.models import Timer
 
 
 class TimerForm(forms.ModelForm):
-    duration_minutes = forms.DecimalField(
-        label="分",
-        min_value=Decimal("0.1"),
-        max_value=Decimal("1440"),
-        decimal_places=1,
-        max_digits=6,
+  
+    duration_minutes = forms.IntegerField(
+        label="時間（分）",
+        min_value=1,
+        max_value=1440,
         required=True,
+        widget=forms.NumberInput(attrs={"min": "1", "step": "1"}),
     )
 
     class Meta:
         model = Timer
-        # duration_seconds はフォームに出さず、duration_minutes から計算して保存する
         fields = ["name", "category", "duration_minutes", "sound"]
+        labels = {
+            "name": "タイマー名",
+            "category": "カテゴリー",
+            "sound": "サウンド",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 編集画面用：DBの秒→分にして初期表示
+
+        # 編集画面用：DBの秒→分（整数）にして初期表示
         if self.instance and self.instance.pk and self.instance.duration_seconds is not None:
-            self.fields["duration_minutes"].initial = (
-                Decimal(self.instance.duration_seconds) / Decimal("60")
-            ).quantize(Decimal("0.1"))
+            minutes = (Decimal(self.instance.duration_seconds) / Decimal("60")).to_integral_value(
+                rounding=ROUND_HALF_UP
+            )
+            self.fields["duration_minutes"].initial = int(minutes)
 
     def save(self, *, user=None, commit=True):
         obj: Timer = super().save(commit=False)
 
-        minutes = self.cleaned_data["duration_minutes"]
-        seconds = (minutes * Decimal("60")).to_integral_value(rounding=ROUND_HALF_UP)
-        obj.duration_seconds = int(seconds)
+        minutes = int(self.cleaned_data["duration_minutes"])
+        obj.duration_seconds = minutes * 60
 
         # 作成時は user 必須、更新時は既存の obj.user を維持
         if obj.pk is None:
@@ -44,4 +49,5 @@ class TimerForm(forms.ModelForm):
             obj.save()
             self.save_m2m()
         return obj
+
 
