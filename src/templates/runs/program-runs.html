@@ -18,10 +18,22 @@
                 <p>プログラム：</p>
                 <select name="program_id" class="program" id="programId">
                     <!-- optionタグはバックエンドから取得したデータで作成する -->
+                    <option value="">プログラムを選択してください</option>
                     <option value="1">平日</option>
                     <option value="2">休日</option>
+                    <!-- 確認用に以下を追加 -->
+                    <option value="3">祝日</option>
+                    <option value="4">その他</option>
                 </select>
             </section>
+
+            <!-- 【追加】JSへ渡す設定（URLとCSRF） -->
+            <div
+            id="config"
+            data-post-url="{% url 'runs:program-runs' %}"
+            data-csrf="{{ csrf_token }}"
+            hidden
+            ></div>
 
             <section class="timer-execute">
                 <button id="startBtn" type="button">

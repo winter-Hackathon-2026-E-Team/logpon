@@ -6,7 +6,6 @@ const postUrl = config?.dataset.postUrl;
 const csrf = config?.dataset.csrf;
 
 postBtn.addEventListener("click", async () => {
-  console.log("送信ボタン");
   const programId = programSelect.value;
 
   try {
@@ -19,14 +18,10 @@ postBtn.addEventListener("click", async () => {
       },
       body: JSON.stringify({ program_id: programId }),
     });
-    console.log(res)
-    console.log("status", res.status);
-    console.log("redirected", res.redirected);
-    console.log("final url", res.url);
-    console.log("content-type", res.headers.get("content-type"));
     const data = await res.json();
-    console.log(data);
+    const redirect = await data.redirect_url;
+    window.location.href = await redirect;
   } catch (error) {
-    console.error(error.message);
+    console.error("エラーが発生しました:", error.message);
   }
 });

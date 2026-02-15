@@ -13,7 +13,7 @@ from ...services.program_runs.create_draft import create_runs_draft
 
 class ProgramRunsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'runs/test_program-runs.html')
+        return render(request, 'runs/program-runs.html')
 
     def post(self, request, *args, **kwargs):
         body = json.loads(request.body)
