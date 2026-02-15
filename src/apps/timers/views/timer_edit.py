@@ -8,7 +8,7 @@ from apps.timers.views.mixins import TimerRowsMixin
 
 
 class TimerEditView(LoginRequiredMixin, TimerRowsMixin, View):
-    template_name = "timers/timer_CRUD.html"
+    template_name = "timers/timers.html"
     login_url = "users:login"
 
     def post(self, request, timer_id: int):
