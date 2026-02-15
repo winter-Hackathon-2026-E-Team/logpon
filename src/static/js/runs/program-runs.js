@@ -41,6 +41,12 @@ function openMemoModal(timerRunId) {
   modal.hidden = false;
 }
 
+// 【追加】
+const page = timerList.dataset.page;
+console.log(page)
+// if (page === "program-runs") initProgramRuns();
+// if (page === "program-runs-detail") initRunDetail();
+
 // 【追加】プログラムメニュー選択時のfetchAPI
 const programSelect = document.getElementById("programId");
 const config = document.getElementById("config");
@@ -66,6 +72,14 @@ programSelect.addEventListener("change", async () => {
     const redirect = await data.redirect_url;
     window.location.href = await redirect;
     timerList.innerHTML = "";
+    const timer_runs = data.data.timer_runs;
+    console.log(timer_runs);
+    timer_runs.forEach((timer_run) => {
+      const btn = document.createElement("button");
+      btn.className = "oneTimer";
+      btn.innerHTML = `<p>${timer_run.timer_name_snapshot}</p>`;
+      timerList.appendChild(btn);
+    });
   } catch (error) {
     console.error("エラーが発生しました:", error.message);
   }
