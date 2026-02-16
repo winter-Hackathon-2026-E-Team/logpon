@@ -41,13 +41,7 @@ function openMemoModal(timerRunId) {
   modal.hidden = false;
 }
 
-// 【追加】
-const page = timerList.dataset.page;
-console.log(page)
-// if (page === "program-runs") initProgramRuns();
-// if (page === "program-runs-detail") initRunDetail();
-
-// 【追加】プログラムメニュー選択時のfetchAPI
+// 【追加】プログラムメニュー選択時のfetchAPI(POST)
 const programSelect = document.getElementById("programId");
 const config = document.getElementById("config");
 
@@ -70,6 +64,30 @@ programSelect.addEventListener("change", async () => {
     const data = await res.json();
     const redirect = await data.redirect_url;
     window.location.href = await redirect;
+  } catch (error) {
+    console.error("エラーが発生しました:", error.message);
+  }
+});
+
+// 【追加】リダイレクト先でのプログラムタイマー展開（fetch GET）
+document.addEventListener("DOMContentLoaded", async () => {
+  const executePage = document.querySelector(".execute-page");
+  const runId = executePage.dataset.programRunId;
+  const apiUrl = executePage.dataset.apiUrl;
+  if (!runId) return;
+
+  // 選択したプルダウンメニュー固定
+  programSelect
+
+  try {
+    const res = await fetch(apiUrl, {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!res.ok) {
+      throw new Error(`レスポンスステータス: ${res.status}`);
+    }
+    const data = await res.json();
     timerList.innerHTML = "";
     const timer_runs = data.runs_data.timer_runs;
     timer_runs.forEach((timer_run) => {
@@ -79,6 +97,6 @@ programSelect.addEventListener("change", async () => {
       timerList.appendChild(btn);
     });
   } catch (error) {
-    console.error("エラーが発生しました:", error.message);
+    console.error(error.message);
   }
 });

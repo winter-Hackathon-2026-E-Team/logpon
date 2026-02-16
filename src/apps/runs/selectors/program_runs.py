@@ -9,14 +9,12 @@ def selector_exist_programs():
     return programs
 
 # 既存のprogram_runs, timer_runs取得
-def selector_exist_runs(program_id):
-    program_run = ProgramRun.objects.filter(program_id=program_id).values(
+def selector_exist_runs(program_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
         'id',
         'program_id',
         'status',
         ).first()
-    id_dict = ProgramRun.objects.filter(program_id=program_id).values('id').first()
-    program_run_id = id_dict.get('id')
     timer_runs = TimerRun.objects.filter(program_run_id=program_run_id).values(
         'id',
         'order_index_snapshot',
@@ -26,4 +24,4 @@ def selector_exist_runs(program_id):
         'status',
         'elapsed_sec',
         )
-    return (program_run, timer_runs, program_run_id)
+    return (program_run, timer_runs)

@@ -9,7 +9,12 @@
 
 {% block content %}
 <!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
-<div class="execute-page">
+<div class="execute-page"
+    {% if program_run_id %}
+        data-program-run-id="{{ program_run_id }}"
+        data-api-url="{% url 'runs:program-runs-api' program_run_id %}"
+    {% endif %}
+>
     <div class="execute-zone">
         <!-- 左画面 -->
         <div class="left-disp">
@@ -18,7 +23,7 @@
                 <p>プログラム：</p>
                 <select name="program_id" class="program" id="programId">
                     <option value="">プログラムを選択してください</option>
-                    {% for program in programs %}
+                    {% for program in dict_programs.programs %}
                         <option value="{{program.id}}">{{program.program_name}}</option>
                     {% endfor %}
                 </select>
@@ -50,7 +55,7 @@
         <!-- 右画面 -->
         <div class="right-disp">
             
-            <section data-page="program-runs" id="executeTimerList">
+            <section id="executeTimerList">
                 <!-- タイマーはバックエンドから取得したデータで作成する -->
                 <!-- <button class="oneTimer finishedOneTimer" data-timer-run-id="001"
                  data-category="集中">

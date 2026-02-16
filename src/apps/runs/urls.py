@@ -3,6 +3,7 @@ from django.urls import path
 from .views.program_runs import (
     ProgramRunsView,
     ProgramPagesView,
+    ProgramRunApiView,
     ProgramStartView,
     ProgramResumeView,
     ProgramPauseView,
@@ -20,6 +21,7 @@ urlpatterns = [
     path('program-runs/', ProgramRunsView.as_view(), name='program-runs'),
     # 指定プログラム実行画面表示（GET）
     path('program-runs/<int:program_run_id>/', ProgramPagesView.as_view(), name='program-runs-detail'),
+    path('api/program-runs/<int:program_run_id>/', ProgramRunApiView.as_view(), name='program-runs-api'),
     # プログラム状態遷移（POST）
     path('program-runs/<int:program_run_id>/start/', ProgramStartView.as_view(), name='program-runs-start'),
     path('program-runs/<int:program_run_id>/resume/', ProgramResumeView.as_view(), name='program-runs-resume'),
