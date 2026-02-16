@@ -16,6 +16,5 @@ class ProgramRunApiView(LoginRequiredMixin, View):
     def get(self, request, program_run_id):
         program_run, timer_runs = selector_exist_runs(program_run_id)
         runs_data = serialize_exist_runs(program_run, timer_runs)
-        print(runs_data)
         return JsonResponse({'runs_data': runs_data})
 
