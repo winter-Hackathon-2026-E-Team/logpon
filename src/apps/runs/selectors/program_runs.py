@@ -1,9 +1,14 @@
 # DB検索、取得（読み取り専用）
-from ...programs.models.program_timer import ProgramTimer
+from ...programs.models import Program, ProgramTimer
 from ..models.program_run import ProgramRun
 from ..models.timer_run import TimerRun
 
-# 既存のprogram_runs, timer_runs検索
+# 既存のすべてのprograms取得
+def selector_exist_programs():
+    programs = Program.objects.values().all()
+    return programs
+
+# 既存のprogram_runs, timer_runs取得
 def selector_exist_runs(program_id):
     program_run = ProgramRun.objects.filter(program_id=program_id).values(
         'id',

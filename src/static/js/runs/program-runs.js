@@ -68,12 +68,10 @@ programSelect.addEventListener("change", async () => {
       body: JSON.stringify({ program_id: programId }),
     });
     const data = await res.json();
-    console.log(data);
     const redirect = await data.redirect_url;
     window.location.href = await redirect;
     timerList.innerHTML = "";
-    const timer_runs = data.data.timer_runs;
-    console.log(timer_runs);
+    const timer_runs = data.runs_data.timer_runs;
     timer_runs.forEach((timer_run) => {
       const btn = document.createElement("button");
       btn.className = "oneTimer";

@@ -17,13 +17,10 @@
             <section class="program-select">
                 <p>プログラム：</p>
                 <select name="program_id" class="program" id="programId">
-                    <!-- optionタグはバックエンドから取得したデータで作成する -->
                     <option value="">プログラムを選択してください</option>
-                    <option value="1">平日</option>
-                    <option value="2">休日</option>
-                    <!-- 確認用に以下を追加 -->
-                    <option value="3">祝日</option>
-                    <option value="4">その他</option>
+                    {% for program in programs %}
+                        <option value="{{program.id}}">{{program.program_name}}</option>
+                    {% endfor %}
                 </select>
             </section>
 
