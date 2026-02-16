@@ -73,13 +73,22 @@
 .timer-add-btn {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     width: 84px;
     height: 753px;
+    gap: 300px;
+    padding-top: 70px;
 }
 
 .timer-add-btn button {
     border: none;
     background: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .timer-add-icon {
@@ -87,9 +96,6 @@
     color: var(--color-primary);
 }
 
-#focusAddIcon {
-    margin: 250px auto 300px;
-}
 
 .timer-and-link {
     display: flex;
@@ -140,3 +146,59 @@
     gap: 13px;
 }
 /* ここまで */
+
+/* タイマー選択状態 */
+.oneTimer.selected {
+  outline: 2px solid var(--color-header-current-text);
+  background: var(--color-selected-bg);
+}
+
+/* ドラッグ中に薄くなる */
+.oneTimer.dragging {
+    opacity: 0.5;
+}
+
+/* モーダル内の文字のレイアウト */
+#programCreateForm, #programEditForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+
+#deleteModalArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+
+/* display:flex;でもhiddenを効かせる設定 */
+#programCreateForm[hidden], #programEditForm[hidden] {
+  display: none !important;
+}
+
+/* モーダル内のinputの幅を広げる */
+.modal-form{
+    width: 100%;
+}
+
+/* 保存成功トースト */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: #111827;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity .2s;
+  z-index: 9999;
+}
+.toast.show {
+  opacity: 1;
+}

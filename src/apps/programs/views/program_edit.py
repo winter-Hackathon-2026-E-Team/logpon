@@ -54,5 +54,9 @@ class ProgramEditView(LoginRequiredMixin, View):
             "rows": rows,
             "my_timers": my_timers,
             "selected_program_id": program_id,  # ★選択維持
+
+            # エラー時にモーダルを開いたままにするフラグ
+            "open_upsert_modal": True,
+            "upsert_mode": "edit",
         })
 
