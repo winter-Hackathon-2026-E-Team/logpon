@@ -1,86 +1,100 @@
+{# templates/programs/programs.html #}
 {% extends "common/base.html" %}
 {% load static %}
 
 {% block title %}Programs{% endblock %}
 
 {% block content %}
-<div style="max-width: 1100px; margin: 20px auto; padding: 0 16px;">
+<style>
+  .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+  .grid { display:grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start; }
+  .card { border:1px solid #e5e7eb; border-radius:10px; padding:14px; background:#fff; }
+  .muted { color:#6b7280; font-size:12px; }
+  .btn { padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; background:transparent; cursor:pointer; }
+  .btn-danger { border-color:#ef4444; color:#ef4444; }
+  .pill { font-size:12px; text-decoration:none; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; display:inline-block; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .mt8 { margin-top:8px; }
+  .mt10 { margin-top:10px; }
+  .mt12 { margin-top:12px; }
+  .mb12 { margin-bottom:12px; }
+  .list { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
 
+  input, select { padding:8px; border:1px solid #e5e7eb; border-radius:8px; width:100%; }
 
+  /* ProgramTimer editor */
+  .ptList { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+  .ptItem { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:10px; padding:10px; }
+  .ptItem.dragging { opacity: 0.55; }
+  .dragHandle { cursor: grab; user-select:none; padding:4px 8px; border:1px solid #e5e7eb; border-radius:8px; font-weight:700; }
+  .badge { display:inline-block; padding:4px 8px; border:1px solid #e5e7eb; border-radius:999px; font-size:12px; }
+</style>
+
+<div class="wrap">
   {% if messages %}
-    <div style="margin: 10px 0 16px;">
+    <div class="mb12">
       {% for message in messages %}
-        <div style="padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+        <div class="card" style="padding:10px 12px; margin-bottom:8px;">
           {{ message }}
         </div>
       {% endfor %}
     </div>
   {% endif %}
 
-  <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start;">
+  <div class="grid">
 
     <!-- 左：Program一覧＋作成 -->
-    <section style="border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
-      <h2 style="margin:0 0 10px; font-size: 18px;">プログラム一覧</h2>
+    <section class="card">
+      <h2 style="margin:0 0 10px; font-size:18px;">プログラム一覧</h2>
 
       <!-- 作成 -->
-      <div style="border:1px solid #f3f4f6; border-radius:10px; padding:12px; margin-bottom:12px;">
-        <div style="font-weight: 600; margin-bottom:8px;">新規作成</div>
+      <div class="card" style="border-color:#f3f4f6; padding:12px; margin-bottom:12px;">
+        <div style="font-weight:600; margin-bottom:8px;">新規作成</div>
         <form method="post" action="{% url 'programs:list' %}">
           {% csrf_token %}
           {{ create_form.non_field_errors }}
-
-          <div style="display:flex; gap:8px; align-items:center;">
-            <div style="flex: 1;">
+          <div class="row">
+            <div style="flex:1;">
               {{ create_form.program_name }}
               {{ create_form.program_name.errors }}
             </div>
-            <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
-              作成
-            </button>
+            <button type="submit" class="btn">作成</button>
           </div>
         </form>
       </div>
 
       {% if rows %}
-        <ul style="list-style:none; padding:0; margin:0; display:grid; gap:10px;">
+        <ul class="list">
           {% for r in rows %}
             {% with p=r.program f=r.form %}
-              <li style="border:1px solid #e5e7eb; border-radius:10px; padding:12px; background: {% if p.id == selected_program_id %}#f9fafb{% else %}#fff{% endif %};">
+              <li class="card" style="padding:12px; background:{% if p.id == selected_program_id %}#f9fafb{% else %}#fff{% endif %};">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                   <div>
                     <div style="font-weight:700;">{{ p.program_name }}</div>
-                    <div style="color:#6b7280; font-size:12px;">ID: {{ p.id }}</div>
+                    <div class="muted">ID: {{ p.id }}</div>
                   </div>
 
-                  <a href="{% url 'programs:list' %}?selected={{ p.id }}"
-                     style="font-size:12px; text-decoration:none; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">
-                    選択
-                  </a>
+                  <a class="pill" href="{% url 'programs:list' %}?selected={{ p.id }}">選択</a>
                 </div>
 
                 <!-- 編集 -->
-                <div style="margin-top:10px;">
-                  <form method="post" action="{% url 'programs:edit' p.id %}" style="display:flex; gap:8px; align-items:center;">
+                <div class="mt10">
+                  <form method="post" action="{% url 'programs:edit' p.id %}" class="row">
                     {% csrf_token %}
                     {{ f.non_field_errors }}
                     <div style="flex:1;">
                       {{ f.program_name }}
                       {{ f.program_name.errors }}
                     </div>
-                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
-                      保存
-                    </button>
+                    <button type="submit" class="btn">保存</button>
                   </form>
                 </div>
 
-                <!-- 削除 -->
-                <div style="margin-top:10px;">
+                <!-- #削除 -->
+                <div class="mt10">
                   <form method="post" action="{% url 'programs:delete' p.id %}" onsubmit="return confirm('削除しますか？');">
                     {% csrf_token %}
-                    <button type="submit" style="padding:8px 10px; border:1px solid #ef4444; color:#ef4444; border-radius:8px; background:transparent;">
-                      削除
-                    </button>
+                    <button type="submit" class="btn btn-danger">削除</button>
                   </form>
                 </div>
               </li>
@@ -88,145 +102,261 @@
           {% endfor %}
         </ul>
       {% else %}
-        <p style="margin:0; color:#6b7280;">まだプログラムがありません。</p>
+        <p class="muted" style="margin:0;">まだプログラムがありません。</p>
       {% endif %}
     </section>
 
-    <!-- 右：選択中Programの中身（ProgramTimer） -->
-    <section style="border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
-      <h2 style="margin:0 0 10px; font-size: 18px;">選択中プログラム</h2>
+    <section class="card">
+      <h2 style="margin:0 0 10px; font-size:18px;">選択中プログラム</h2>
 
       {% if not selected_program_id %}
-        <p style="margin:0; color:#6b7280;">左の「選択」からプログラムを選んでください。</p>
+        <p class="muted" style="margin:0;">左の「選択」からプログラムを選んでください。</p>
       {% else %}
 
         {% for r in rows %}
           {% if r.program.id == selected_program_id %}
             {% with program=r.program pts=r.program_timers %}
-              <div style="margin-bottom:12px; padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
+
+              <div class="card mb12" style="border-color:#f3f4f6; padding:12px;">
                 <div style="font-weight:700;">{{ program.program_name }}</div>
-                <div style="color:#6b7280; font-size:12px;">Program ID: {{ program.id }}</div>
+                <div class="muted">Program ID: {{ program.id }}</div>
               </div>
 
-              <!-- Timer追加 -->
-              <div style="margin-bottom:12px; padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
-                <div style="font-weight:600; margin-bottom:8px;">タイマーを追加</div>
-
-                <form method="post" action="/program_timers/{{ program.id }}/">
-                  {% csrf_token %}
-                  <div style="display:flex; gap:8px; align-items:center;">
-                    <select name="timer_id" style="flex:1; padding:8px; border:1px solid #e5e7eb; border-radius:8px;">
-                      <option value="">選択してください</option>
-                      {% for t in my_timers %}
-                        <option value="{{ t.id }}">{{ t.name }}（{{ t.category }} / {{ t.duration_seconds }}秒）</option>
-                      {% endfor %}
-                    </select>
-                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
-                      追加
-                    </button>
-                  </div>
-                </form>
-
-                <p style="margin:8px 0 0; color:#6b7280; font-size:12px;">
-                  ※ action のURLが違う場合はここだけ合わせてください（ProgramTimerCreateView）。
-                </p>
+              {# JSが使うURL/IDをdata属性で渡す #}
+              <div id="programEditor"
+                   data-program-id="{{ program.id }}"
+                   data-save-url="{% url 'program_timers:save' program.id %}">
               </div>
 
-              <!-- ProgramTimer一覧 -->
-              <div style="padding:12px; border:1px solid #f3f4f6; border-radius:10px;">
-                <div style="font-weight:600; margin-bottom:8px;">登録タイマー</div>
+              <div class="card mb12" style="border-color:#f3f4f6; padding:12px;">
+                <div style="font-weight:600; margin-bottom:8px;">タイマーを追加（未確定）</div>
 
-                {% if pts %}
-                  <ul id="ptList" style="list-style:none; padding:0; margin:0; display:grid; gap:8px;">
-                    {% for pt in pts %}
-                      <li data-ptid="{{ pt.id }}" style="display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:10px; padding:10px;">
-                        <div>
-                          <div style="font-weight:600;">
-                            {{ pt.timer.name }}
-                            <span style="color:#6b7280; font-weight:400; font-size:12px;">
-                              （order={{ pt.order_index }} / PT={{ pt.id }}）
-                            </span>
-                          </div>
-                          <div style="color:#6b7280; font-size:12px;">
-                            {{ pt.timer.category }} / {{ pt.timer.duration_seconds }}秒
-                          </div>
-                        </div>
+                <div class="row">
+                  <select id="timerSelect" style="flex:1;">
+                    <option value="">選択してください</option>
+                    {% for t in my_timers %}
+                      <option value="{{ t.id }}"
+                              data-name="{{ t.name }}"
+                              data-min="{% widthratio t.duration_seconds 60 1 %}">
+                        {{ t.name }}（{% widthratio t.duration_seconds 60 1 %}分）
+                      </option>
 
-                        <div style="display:flex; gap:6px; align-items:center;">
-                          <button type="button" class="upBtn" style="padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">↑</button>
-                          <button type="button" class="downBtn" style="padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px;">↓</button>
-
-                          <form method="post" action="/program_timers/{{ pt.id }}/delete/" onsubmit="return confirm('このタイマーを削除しますか？');">
-                            {% csrf_token %}
-                            <button type="submit" style="padding:6px 8px; border:1px solid #ef4444; color:#ef4444; border-radius:8px; background:transparent;">
-                              削除
-                            </button>
-                          </form>
-                        </div>
-                      </li>
                     {% endfor %}
-                  </ul>
+                  </select>
+                  <button type="button" id="addTimerBtn" class="btn">追加</button>
+                </div>
 
-                  <!-- 並び順保存 -->
-                  <form method="post" action="/program_timers/{{ program.id }}/reorder/" style="margin-top:10px;">
-                    {% csrf_token %}
-                    <input type="hidden" name="order" id="orderInput" value="">
-                    <button type="submit" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px;">
-                      並び順を保存
-                    </button>
-                    <span style="margin-left:8px; color:#6b7280; font-size:12px;">
-                      ※ 上下で並べ替え → 保存（ProgramTimerReorderView）
-                    </span>
-                  </form>
+                <div class="mt10">
+                  <span id="dirtyBadge" class="badge" style="display:none;">未保存の変更があります</span>
+                  <span id="saveState" class="muted" style="margin-left:8px;"></span>
+                </div>
 
+                <div class="mt10 row">
+                  <button type="button" id="saveBtn" class="btn">確定して保存</button>
+                  <span class="muted">※ 追加/削除/並び替えは確定までDBに反映されません</span>
+                </div>
+              </div>
+
+              <!-- ProgramTimer一覧（ドラッグで並び替え：未確定） -->
+              <div class="card" style="border-color:#f3f4f6; padding:12px;">
+                <div style="font-weight:600; margin-bottom:8px;">登録タイマー（ドラッグで並び替え）</div>
+
+                <ul id="ptList" class="ptList">
+                  {% for pt in pts %}
+                    <li class="ptItem" data-timerid="{{ pt.timer.id }}">
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="dragHandle" draggable="true" title="ドラッグで並べ替え">≡</span>
+                        <div>
+                          <div style="font-weight:600;">{{ pt.timer.name }}</div>
+                          <div class="muted">{% widthratio pt.timer.duration_seconds 60 1 %}分</div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="btn btn-danger removeBtn">削除</button>
+                    </li>
+                  {% endfor %}
+                </ul>
+
+                {% if not pts %}
+                  <p id="emptyHint" class="muted" style="margin:0;">まだタイマーが追加されていません。</p>
                 {% else %}
-                  <p style="margin:0; color:#6b7280;">まだタイマーが追加されていません。</p>
+                  <p id="emptyHint" class="muted" style="margin:0; display:none;">まだタイマーが追加されていません。</p>
                 {% endif %}
               </div>
+
             {% endwith %}
           {% endif %}
         {% endfor %}
 
       {% endif %}
     </section>
+
   </div>
 </div>
 
 <script>
-  // 簡易並び替え：上下ボタンでDOMを入れ替えて、submit時に "id,id,id" を order に詰める
-  (function () {
-    const list = document.getElementById("ptList");
-    const orderInput = document.getElementById("orderInput");
-    if (!list || !orderInput) return;
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
 
-    function syncOrder() {
-      const ids = Array.from(list.querySelectorAll("li[data-ptid]"))
-        .map(li => li.getAttribute("data-ptid"));
-      orderInput.value = ids.join(",");
+  (function () {
+    const editor = document.getElementById("programEditor");
+    const list = document.getElementById("ptList");
+    const timerSelect = document.getElementById("timerSelect");
+    const addBtn = document.getElementById("addTimerBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const dirtyBadge = document.getElementById("dirtyBadge");
+    const saveState = document.getElementById("saveState");
+    const emptyHint = document.getElementById("emptyHint");
+
+    if (!editor || !list || !timerSelect || !addBtn || !saveBtn) return;
+
+    const saveUrl = editor.dataset.saveUrl;
+
+    let draggingLi = null;
+    let dirty = false;
+
+    function refreshEmptyHint() {
+      const hasItems = list.querySelector("li[data-timerid]") !== null;
+      if (!emptyHint) return;
+      emptyHint.style.display = hasItems ? "none" : "block";
     }
 
-    list.addEventListener("click", (e) => {
-      const up = e.target.closest(".upBtn");
-      const down = e.target.closest(".downBtn");
-      if (!up && !down) return;
+    function setDirty(on) {
+      dirty = on;
+      if (dirtyBadge) dirtyBadge.style.display = on ? "inline-block" : "none";
+      if (saveState) saveState.textContent = on ? "" : "保存済み";
+    }
 
-      const li = e.target.closest("li[data-ptid]");
-      if (!li) return;
+    // buildLi は外に置く
+    function buildLi({ timerId, name, min }) {
+      const li = document.createElement("li");
+      li.className = "ptItem";
+      li.dataset.timerid = String(timerId);
 
-      if (up) {
-        const prev = li.previousElementSibling;
-        if (prev) list.insertBefore(li, prev);
-      }
-      if (down) {
-        const next = li.nextElementSibling;
-        if (next) list.insertBefore(next, li);
-      }
-      syncOrder();
+      li.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="dragHandle" draggable="true" title="ドラッグで並べ替え">≡</span>
+          <div>
+            <div style="font-weight:600;"></div>
+            <div class="muted"></div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-danger removeBtn">削除</button>
+      `;
+
+      li.querySelector("div[style*='font-weight']").textContent = name;
+      li.querySelector(".muted").textContent = `${min}分`;
+      return li;
+    }
+
+    // 追加
+    addBtn.addEventListener("click", () => {
+      const timerId = Number(timerSelect.value);
+      const opt = timerSelect.selectedOptions[0];
+      if (!timerId || !opt) return;
+
+      const name = opt.dataset.name || opt.textContent || "timer";
+      const min = opt.dataset.min || "";
+
+      list.appendChild(buildLi({ timerId, name, min }));
+      timerSelect.value = "";
+
+      setDirty(true);
+      refreshEmptyHint();
     });
 
-    // 初期同期（今の表示順を入れる）
-    syncOrder();
+    // 削除     
+    list.addEventListener("click", (e) => {
+      const rm = e.target.closest(".removeBtn");
+      if (!rm) return;
+
+      const li = rm.closest("li[data-timerid]");
+      if (!li) return;
+
+      li.remove();
+      setDirty(true);
+      refreshEmptyHint();
+    });
+    
+    // drag&drop
+    function getAfterElement(container, y) {
+      const items = [...container.querySelectorAll("li[data-timerid]:not(.dragging)")];
+      return items.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - (box.top + box.height / 2);
+        if (offset < 0 && offset > closest.offset) return { offset, element: child };
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
+    list.addEventListener("dragstart", (e) => {
+      const handle = e.target.closest(".dragHandle");
+      if (!handle) return;
+
+      const li = handle.closest("li[data-timerid]");
+      if (!li) return;
+
+      draggingLi = li;
+      li.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    list.addEventListener("dragend", () => {
+      if (draggingLi) draggingLi.classList.remove("dragging");
+      draggingLi = null;
+      setDirty(true);
+    });
+
+    list.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      if (!draggingLi) return;
+
+      const after = getAfterElement(list, e.clientY);
+      if (after == null) list.appendChild(draggingLi);
+      else list.insertBefore(draggingLi, after);
+    });
+
+    // 確定して保存（JSON API）
+    saveBtn.addEventListener("click", async () => {
+      const timerIds = [...list.querySelectorAll("li[data-timerid]")]
+        .map(li => Number(li.dataset.timerid));
+
+      const csrftoken = getCookie("csrftoken");
+
+      try {
+        const res = await fetch(saveUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ timer_ids: timerIds }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          alert(data.error || "保存に失敗しました");
+          return;
+        }
+        setDirty(false);
+      } catch (err) {
+        alert("通信に失敗しました");
+      }
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+
+    setDirty(false);
+    refreshEmptyHint();
   })();
 </script>
-{% endblock %}
 
+{% endblock %}
