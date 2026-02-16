@@ -50,6 +50,7 @@ const csrf = config?.dataset.csrf;
 
 programSelect.addEventListener("change", async () => {
   const programId = programSelect.value;
+  if (!programId) return;
 
   try {
     const res = await fetch(postUrl, {
@@ -69,7 +70,7 @@ programSelect.addEventListener("change", async () => {
   }
 });
 
-// 【追加】リダイレクト先でのプログラムタイマー展開（fetch GET）
+// 【追加】
 document.addEventListener("DOMContentLoaded", async () => {
   const executePage = document.querySelector(".execute-page");
   const runId = executePage.dataset.programRunId;
@@ -77,8 +78,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!runId) return;
 
   // 選択したプルダウンメニュー固定
-  programSelect
+  const selectedOption = programSelect.querySelector(
+    `option[value="${runId}"]`,
+  );
+  selectedOption.selected = true;
 
+  // リダイレクト先でのプログラムタイマー展開（fetch GET）
   try {
     const res = await fetch(apiUrl, {
       headers: { Accept: "application/json" },
