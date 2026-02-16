@@ -1,39 +1,34 @@
 from django.db import transaction
-from django.db.models import F, Max
+from django.db.models import Max
 
 from apps.programs.models import ProgramTimer
+from apps.timers.models import Timer
 
 
-def add_timer_to_program(*, program, timer) -> ProgramTimer:
-    max_idx = (
-        ProgramTimer.objects.filter(program=program).aggregate(m=Max("order_index"))["m"]
-        or 0
-    )
-    return ProgramTimer.objects.create(program=program, timer=timer, order_index=max_idx + 1)
+def replace_program_timers(*, program, timer_ids: list[int]) -> None:
+    """
+    Program内のProgramTimerを、timer_idsの順で「全置換」する。
+    ・追加/削除/並び替えをまとめて確定する用途
+    ・timer_idsは重複OK（重複NGにしたいならここで弾く）
+    """
+    if not isinstance(timer_ids, list):
+        raise ValueError("timer_ids must be list")
 
+    # 空配列は「全削除」として許可
+    if any((not isinstance(x, int)) for x in timer_ids):
+        raise ValueError("timer_ids must be list[int]")
 
-def delete_program_timer(*, program_timer: ProgramTimer) -> None:
-    program = program_timer.program
-    deleted_order = program_timer.order_index
-
-    with transaction.atomic():
-        program_timer.delete()
-        # 後ろを詰める（1,2,3…を維持）
-        ProgramTimer.objects.filter(program=program, order_index__gt=deleted_order).update(
-            order_index=F("order_index") - 1
-        )
-
-
-def reorder_program_timers(*, program, ordered_ids: list[int]) -> None:
-    existing_ids = list(
-        ProgramTimer.objects.filter(program=program).values_list("id", flat=True)
-    )
-
-    if set(ordered_ids) != set(existing_ids) or len(ordered_ids) != len(existing_ids):
-        raise ValueError("reorder target mismatch")
+    # 所有チェック（Timerは自分のものだけ）
+    unique_ids = set(timer_ids)
+    timers = Timer.objects.filter(user=program.user, id__in=unique_ids)
+    timer_map = {t.id: t for t in timers}
+    if unique_ids != set(timer_map.keys()):
+        raise ValueError("invalid timer_ids")
 
     with transaction.atomic():
-        # UNIQUE(program, order_index) 回避のため一旦+1000
-        ProgramTimer.objects.filter(program=program).update(order_index=F("order_index") + 1000)
-        for idx, pt_id in enumerate(ordered_ids, start=1):
-            ProgramTimer.objects.filter(id=pt_id, program=program).update(order_index=idx)
+        ProgramTimer.objects.filter(program=program).delete()
+        ProgramTimer.objects.bulk_create([
+            ProgramTimer(program=program, timer=timer_map[tid], order_index=i)
+            for i, tid in enumerate(timer_ids, start=1)
+        ])
+
