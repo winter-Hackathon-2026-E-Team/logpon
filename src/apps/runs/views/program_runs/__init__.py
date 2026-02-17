@@ -1,5 +1,5 @@
 from .index import ProgramRunsView
-from .pages import ProgramPagesView
+from .pages import ProgramPagesView, ProgramRunApiView
 from .start import ProgramStartView
 from .resume import ProgramResumeView
 from .pause import ProgramPauseView
@@ -11,6 +11,7 @@ from .progress import ProgramProgressView
 __all__ = [
     'ProgramRunsView',
     'ProgramPagesView',
+    'ProgramRunApiView',
     'ProgramStartView',
     'ProgramResumeView',
     'ProgramPauseView',
