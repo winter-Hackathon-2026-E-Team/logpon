@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views import View
 
-from apps.runs.models import ProgramRun, TimerRun  # パスは合わせて
+from apps.runs.models import ProgramRun, TimerRun  
 
 
 def _iso(dt):
@@ -25,10 +25,7 @@ def _safe_int(v, default=0) -> int:
 
 
 class RecordsView(LoginRequiredMixin, View):
-    """
-    GET /records/
-    records.html を返す（殻ページ）
-    """
+    
     template_name = "runs/records.html"
     login_url = "users:login"
     redirect_field_name = "next"
@@ -38,10 +35,7 @@ class RecordsView(LoginRequiredMixin, View):
 
 
 class RecordsDataView(LoginRequiredMixin, View):
-    """
-    GET /records/data?date=YYYY-MM-DD
-    指定日の started_at を持つ ProgramRun と TimerRun をまとめてJSONで返す
-    """
+   
     login_url = "users:login"
     redirect_field_name = "next"
 
@@ -77,7 +71,6 @@ class RecordsDataView(LoginRequiredMixin, View):
         program_run_ids = [pr.id for pr in program_runs]
 
         # TimerRun: 当日の ProgramRun に紐づく全件
-        # TimerRun の FK は program_run のみ（timer FK は無い）前提
         tr_qs = (
             TimerRun.objects
             .filter(program_run_id__in=program_run_ids)
@@ -95,10 +88,9 @@ class RecordsDataView(LoginRequiredMixin, View):
             totals_by_program[tr.program_run_id] += sec
             daily_total += sec
 
-        # programs 配列（設計：total_elapsed_sec, updated_at）
+       
         programs = []
         for pr in program_runs:
-            # ProgramRun に program_name_snapshot がある想定。無ければフォールバック
             program_name = (
                 getattr(pr, "program_name_snapshot", None)
                 or getattr(pr, "program_name", None)
@@ -109,13 +101,11 @@ class RecordsDataView(LoginRequiredMixin, View):
                 "program_run_id": pr.id,
                 "program_name": program_name,
                 "total_elapsed_sec": totals_by_program.get(pr.id, 0),
-                # updated_at が無い設計でも落ちないように started/ended で代替
                 "updated_at": _iso(getattr(pr, "updated_at", None))
                               or _iso(getattr(pr, "ended_at", None))
                               or _iso(getattr(pr, "started_at", None)),
             })
 
-        # timer_runs 配列（設計：program_run_id 必須）
         # フロント互換：started_at を runninged_at キーで返す
         timer_runs = []
         for tr in timer_runs_list:
