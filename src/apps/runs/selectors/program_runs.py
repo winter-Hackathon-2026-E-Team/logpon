@@ -4,8 +4,8 @@ from ..models.program_run import ProgramRun
 from ..models.timer_run import TimerRun
 
 # 既存のすべてのprograms取得
-def selector_exist_programs():
-    programs = Program.objects.values().all()
+def selector_exist_programs(user_id):
+    programs = Program.objects.filter(user_id=user_id).values().all()
     return programs
 
 # 既存のprogram_runs, timer_runs取得

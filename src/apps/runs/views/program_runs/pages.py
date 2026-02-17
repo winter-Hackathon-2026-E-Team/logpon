@@ -8,7 +8,8 @@ from ...serializers.program_runs import serialize_exist_runs, serialize_exist_pr
 
 class ProgramPagesView(LoginRequiredMixin, View):
     def get(self, request, program_run_id):
-        programs = selector_exist_programs()
+        user_id = self.request.user.id
+        programs = selector_exist_programs(user_id)
         dict_programs = serialize_exist_programs(programs)
         return render(request, 'runs/program-runs.html', context={'dict_programs': dict_programs, 'program_run_id': program_run_id})
 

@@ -64,24 +64,19 @@ programSelect.addEventListener("change", async () => {
     });
     const data = await res.json();
     const redirect = await data.redirect_url;
+
     window.location.href = await redirect;
   } catch (error) {
     console.error("エラーが発生しました:", error.message);
   }
 });
 
-// 【追加】
+// 【追加】リダイレクト後の操作
 document.addEventListener("DOMContentLoaded", async () => {
   const executePage = document.querySelector(".execute-page");
   const runId = executePage.dataset.programRunId;
   const apiUrl = executePage.dataset.apiUrl;
   if (!runId) return;
-
-  // 選択したプルダウンメニュー固定
-  const selectedOption = programSelect.querySelector(
-    `option[value="${runId}"]`,
-  );
-  selectedOption.selected = true;
 
   // リダイレクト先でのプログラムタイマー展開（fetch GET）
   try {
@@ -93,6 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error(`レスポンスステータス: ${res.status}`);
     }
     const data = await res.json();
+    // 右側画面タイマーの展開
     timerList.innerHTML = "";
     const timer_runs = data.runs_data.timer_runs;
     timer_runs.forEach((timer_run) => {
@@ -101,6 +97,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.innerHTML = `<p>${timer_run.timer_name_snapshot}</p>`;
       timerList.appendChild(btn);
     });
+    // 選択したプルダウンメニュー固定
+    const programId = data.runs_data.program_run.program_id;
+    const selectedOption = programSelect.querySelector(
+      `option[value="${programId}"]`,
+    );
+    selectedOption.selected = true;
   } catch (error) {
     console.error(error.message);
   }
