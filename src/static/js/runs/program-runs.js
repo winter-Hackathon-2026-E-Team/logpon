@@ -94,6 +94,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     timer_runs.forEach((timer_run) => {
       const btn = document.createElement("button");
       btn.className = "oneTimer";
+      btn.id = timer_run.id;
+      btn.dataset.status = timer_run.status;
       btn.innerHTML = `<p>${timer_run.timer_name_snapshot}</p>`;
       timerList.appendChild(btn);
     });
@@ -103,6 +105,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       `option[value="${programId}"]`,
     );
     selectedOption.selected = true;
+  } catch (error) {
+    console.error(error.message);
+  }
+});
+
+// プログラムstart（初回実行）
+const btn = document.getElementById("startBtn");
+btn.addEventListener("click", async (e) => {
+  const startIcon = document.getElementById("startIcon");
+  const runId = startIcon.dataset.programRunId;
+  if (!runId) return;
+  const apiUrl = startIcon.dataset.apiUrl;
+  const csrf = startIcon.dataset.csrf;
+  const firstTimerStatus = timerList.querySelector(
+    'button[data-status = "pending"]',
+  );
+  const timerRunId = firstTimerStatus.id;
+  console.log(firstTimerStatus);
+  console.log(timerRunId);
+  console.log(e.target, "送信");
+  console.log(apiUrl);
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+        "X-CSRFToken": csrf,
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: JSON.stringify({ timer_run_id: timerRunId }),
+    });
   } catch (error) {
     console.error(error.message);
   }

@@ -40,7 +40,13 @@
             <section class="timer-execute">
                 <button id="startBtn" type="button">
                     <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
-                    <iconify-icon icon="uil:play" id="startIcon" class=""></iconify-icon>
+                    <iconify-icon icon="uil:play" id="startIcon" class=""
+                    {% if program_run_id %}
+                        data-program-run-id="{{ program_run_id }}"
+                        data-api-url="{% url 'runs:program-runs-start' program_run_id %}"
+                        data-csrf="{{ csrf_token }}"
+                    {% endif %}>
+                    </iconify-icon>
                     <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
                 </button>
                 <div class="timerFace">
