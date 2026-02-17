@@ -172,21 +172,27 @@
     padding-top: 0px;
 }
 
+.arrow-zone {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .timer-add-btn button {
     border: none;
     background: none;
     padding: 0;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 0;
-    min-height: 0;
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
 }
 
 .timer-add-icon {
     font-size: 44px;
     color: var(--color-primary);
+    pointer-events: none;
 }
 
 
