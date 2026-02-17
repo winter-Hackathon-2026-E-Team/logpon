@@ -12,3 +12,9 @@ def serialize_exist_runs(program_run, timer_runs):
     data['program_run'] = program_run
     data['timer_runs'] = list(timer_runs)
     return data
+
+def serialize_start_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['current_timer'] = timer_run
+    return data
