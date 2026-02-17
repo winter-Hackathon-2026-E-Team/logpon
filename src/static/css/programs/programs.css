@@ -1,11 +1,54 @@
 .programs-page {
     max-width: 1200px;
     margin: 0 auto;
+    min-height: calc(100vh - 96px);
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+    flex: 1;
 }
 
 .programs-zone {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 90px 1fr; /* 中央は矢印用の細い列 */
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  margin: 25px 0 16px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.left-disp,
+.right-disp {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
+}
+
+.right-lists {
+    flex: 1;
     display: flex;
-    margin: 25px 0 16px;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+}
+
+.focus-block, .rest-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* 中央は矢印を縦中央に */
+.center-disp {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 0;
+  padding-top: 79px;
+  box-sizing: border-box;
 }
 
 /* プログラム選択のプルダウンとしてmarginを除いて共通化 */
@@ -33,7 +76,6 @@
 #listInAProgram {
     border: solid 1px var(--color-frame);
     width: 525px;
-    height: 575px;
     box-sizing: border-box;
     padding: 13px 0 0;
     display: flex;
@@ -41,6 +83,9 @@
     align-items: center;
     margin-bottom: 15px;
     gap: 13px;
+    min-height: 80px;
+    overflow: auto;
+    flex: 1;
 }
 /* ここまで */
 
@@ -51,6 +96,11 @@
 
 .timerName {
     flex: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    padding-left: 10px;
 }
 
 .duration {
@@ -66,8 +116,48 @@
 }
 
 #program-decide {
-    border: none;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border:solid 2px var(--color-header-current-text);
+    color: var(--color-header-current-text);
     width: 525px;
+    background: var(--color-bg);
+    font-weight: 800;
+    transition: color 1s ease-in-out, border 1s ease-in-out;
+    z-index: 1;
+}
+
+#program-decide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    z-index: -1;
+    pointer-events: none;
+    
+}
+
+#program-decide.is-dirty {
+    color: var(--color-bg);
+    border: none;
+}
+
+#program-decide.is-dirty::before {
+    opacity: 1;
+}
+
+#program-decide.pulse::before {
+    animation: dirtyFade 2.2s ease-in-out 1;
+}
+
+@keyframes dirtyFade {
+    0%   { opacity: 0; }
+    40%  { opacity: 1; }
+    70%  { opacity: 0; }
+    100% { opacity: 1; } /* 最後はグラデで停止 */
 }
 
 .timer-add-btn {
@@ -76,9 +166,10 @@
     justify-content: center;
     align-items: center;
     width: 84px;
-    height: 753px;
-    gap: 300px;
-    padding-top: 70px;
+    height: 100%;
+    min-height: 0;
+    gap: 0;
+    padding-top: 0px;
 }
 
 .timer-add-btn button {
@@ -89,6 +180,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1 1 0;
+    min-height: 0;
 }
 
 .timer-add-icon {
@@ -102,6 +195,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 3px;
+    flex: 0 0 auto;
 }
 
 .timer-and-link p {
@@ -123,27 +217,29 @@
 #focusList {
     border: solid 1px var(--color-frame);
     width: 525px;
-    height: 356px;
     box-sizing: border-box;
     padding: 13px 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 21px;
     gap: 13px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 
 #restList {
     border: solid 1px var(--color-frame);
     width: 525px;
-    height: 289px;
     box-sizing: border-box;
     padding: 13px 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 15px;
     gap: 13px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 /* ここまで */
 

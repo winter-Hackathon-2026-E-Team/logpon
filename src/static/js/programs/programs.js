@@ -397,11 +397,27 @@ function showToast(msg) {
 // 変更あり
 function markDirty() {
   uiState.isDirty = true;
+
+  const btn = document.getElementById('program-decide');
+  if (!btn) return;
+
+  btn.classList.add("is-dirty");
+
+  btn.classList.remove("pulse");
+  void btn.offsetWidth;
+  btn.classList.add("pulse");
+
+  setTimeout(() => btn.classList.remove("pulse"), 2200);
 }
 
 // 変更なし
 function clearDirty() {
   uiState.isDirty = false;
+
+  const btn = document.getElementById('program-decide');
+  if (!btn) return;
+
+  btn.classList.remove("is-dirty", "pulse");
 }
 
 
