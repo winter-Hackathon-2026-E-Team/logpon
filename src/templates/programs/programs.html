@@ -2,361 +2,257 @@
 {% extends "common/base.html" %}
 {% load static %}
 
-{% block title %}Programs{% endblock %}
+{% block title %}プログラム作成・一覧{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/programs/programs.css' %}">
+{% endblock %}
 
 {% block content %}
-<style>
-  .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
-  .grid { display:grid; grid-template-columns: 1fr 1.2fr; gap: 16px; align-items: start; }
-  .card { border:1px solid #e5e7eb; border-radius:10px; padding:14px; background:#fff; }
-  .muted { color:#6b7280; font-size:12px; }
-  .btn { padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; background:transparent; cursor:pointer; }
-  .btn-danger { border-color:#ef4444; color:#ef4444; }
-  .pill { font-size:12px; text-decoration:none; padding:6px 8px; border:1px solid #e5e7eb; border-radius:8px; display:inline-block; }
-  .row { display:flex; gap:8px; align-items:center; }
-  .mt8 { margin-top:8px; }
-  .mt10 { margin-top:10px; }
-  .mt12 { margin-top:12px; }
-  .mb12 { margin-bottom:12px; }
-  .list { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+<!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
+<div class="programs-page">
+  {% with has_program=selected_program_id %}
+    <div class="programs-zone">
+        <!-- 左画面 -->
+        <div class="left-disp">
 
-  input, select { padding:8px; border:1px solid #e5e7eb; border-radius:8px; width:100%; }
-
-  /* ProgramTimer editor */
-  .ptList { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
-  .ptItem { display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid #e5e7eb; border-radius:10px; padding:10px; }
-  .ptItem.dragging { opacity: 0.55; }
-  .dragHandle { cursor: grab; user-select:none; padding:4px 8px; border:1px solid #e5e7eb; border-radius:8px; font-weight:700; }
-  .badge { display:inline-block; padding:4px 8px; border:1px solid #e5e7eb; border-radius:999px; font-size:12px; }
-</style>
-
-<div class="wrap">
-  {% if messages %}
-    <div class="mb12">
-      {% for message in messages %}
-        <div class="card" style="padding:10px 12px; margin-bottom:8px;">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <div class="grid">
-
-    <!-- 左：Program一覧＋作成 -->
-    <section class="card">
-      <h2 style="margin:0 0 10px; font-size:18px;">プログラム一覧</h2>
-
-      <!-- 作成 -->
-      <div class="card" style="border-color:#f3f4f6; padding:12px; margin-bottom:12px;">
-        <div style="font-weight:600; margin-bottom:8px;">新規作成</div>
-        <form method="post" action="{% url 'programs:list' %}">
-          {% csrf_token %}
-          {{ create_form.non_field_errors }}
-          <div class="row">
-            <div style="flex:1;">
-              {{ create_form.program_name }}
-              {{ create_form.program_name.errors }}
-            </div>
-            <button type="submit" class="btn">作成</button>
-          </div>
-        </form>
-      </div>
-
-      {% if rows %}
-        <ul class="list">
-          {% for r in rows %}
-            {% with p=r.program f=r.form %}
-              <li class="card" style="padding:12px; background:{% if p.id == selected_program_id %}#f9fafb{% else %}#fff{% endif %};">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                  <div>
-                    <div style="font-weight:700;">{{ p.program_name }}</div>
-                    <div class="muted">ID: {{ p.id }}</div>
-                  </div>
-
-                  <a class="pill" href="{% url 'programs:list' %}?selected={{ p.id }}">選択</a>
-                </div>
-
-                <!-- 編集 -->
-                <div class="mt10">
-                  <form method="post" action="{% url 'programs:edit' p.id %}" class="row">
-                    {% csrf_token %}
-                    {{ f.non_field_errors }}
-                    <div style="flex:1;">
-                      {{ f.program_name }}
-                      {{ f.program_name.errors }}
-                    </div>
-                    <button type="submit" class="btn">保存</button>
-                  </form>
-                </div>
-
-                <!-- #削除 -->
-                <div class="mt10">
-                  <form method="post" action="{% url 'programs:delete' p.id %}" onsubmit="return confirm('削除しますか？');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">削除</button>
-                  </form>
-                </div>
-              </li>
-            {% endwith %}
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p class="muted" style="margin:0;">まだプログラムがありません。</p>
-      {% endif %}
-    </section>
-
-    <section class="card">
-      <h2 style="margin:0 0 10px; font-size:18px;">選択中プログラム</h2>
-
-      {% if not selected_program_id %}
-        <p class="muted" style="margin:0;">左の「選択」からプログラムを選んでください。</p>
-      {% else %}
-
-        {% for r in rows %}
-          {% if r.program.id == selected_program_id %}
-            {% with program=r.program pts=r.program_timers %}
-
-              <div class="card mb12" style="border-color:#f3f4f6; padding:12px;">
-                <div style="font-weight:700;">{{ program.program_name }}</div>
-                <div class="muted">Program ID: {{ program.id }}</div>
-              </div>
-
-              {# JSが使うURL/IDをdata属性で渡す #}
-              <div id="programEditor"
-                   data-program-id="{{ program.id }}"
-                   data-save-url="{% url 'program_timers:save' program.id %}">
-              </div>
-
-              <div class="card mb12" style="border-color:#f3f4f6; padding:12px;">
-                <div style="font-weight:600; margin-bottom:8px;">タイマーを追加（未確定）</div>
-
-                <div class="row">
-                  <select id="timerSelect" style="flex:1;">
-                    <option value="">選択してください</option>
-                    {% for t in my_timers %}
-                      <option value="{{ t.id }}"
-                              data-name="{{ t.name }}"
-                              data-min="{% widthratio t.duration_seconds 60 1 %}">
-                        {{ t.name }}（{% widthratio t.duration_seconds 60 1 %}分）
+            <section class="program-select">
+                <p>プログラム：</p>
+                <select name="program_id" class="program" id="programId"
+                 data-base-url="{% url 'programs:list' %}"
+                 {% if not rows %}disabled{% endif %}>
+                    <!-- optionタグはバックエンドから取得したデータで作成する -->
+                  {% if rows %}
+                    {% for r in rows %}
+                      <option value="{{ r.program.id }}"
+                              {% if r.program.id == selected_program_id %}selected{% endif %}>
+                        {{ r.program.program_name }}
                       </option>
-
                     {% endfor %}
-                  </select>
-                  <button type="button" id="addTimerBtn" class="btn">追加</button>
-                </div>
+                  {% else %}
+                    <option value="" selected>（プログラムがありません）</option>
+                  {% endif %}
+                </select>
+            </section>
 
-                <div class="mt10">
-                  <span id="dirtyBadge" class="badge" style="display:none;">未保存の変更があります</span>
-                  <span id="saveState" class="muted" style="margin-left:8px;"></span>
-                </div>
+            <section class="program-modify">
+                <button type="button" class="btn program-modify-btn" id="programCreate">新規作成</button>
+                <button type="button" class="btn program-modify-btn" id="programEdit"
+                 {% if not selected_program_id %}disabled{% endif %}>編集</button>
+                <button type="button" class="btn program-modify-btn" id="programDelete"
+                 {% if not selected_program_id %}disabled{% endif %}>削除</button>
+            </section>
 
-                <div class="mt10 row">
-                  <button type="button" id="saveBtn" class="btn">確定して保存</button>
-                  <span class="muted">※ 追加/削除/並び替えは確定までDBに反映されません</span>
-                </div>
-              </div>
-
-              <!-- ProgramTimer一覧（ドラッグで並び替え：未確定） -->
-              <div class="card" style="border-color:#f3f4f6; padding:12px;">
-                <div style="font-weight:600; margin-bottom:8px;">登録タイマー（ドラッグで並び替え）</div>
-
-                <ul id="ptList" class="ptList">
-                  {% for pt in pts %}
-                    <li class="ptItem" data-timerid="{{ pt.timer.id }}">
-                      <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="dragHandle" draggable="true" title="ドラッグで並べ替え">≡</span>
-                        <div>
-                          <div style="font-weight:600;">{{ pt.timer.name }}</div>
-                          <div class="muted">{% widthratio pt.timer.duration_seconds 60 1 %}分</div>
-                        </div>
-                      </div>
-
-                      <button type="button" class="btn btn-danger removeBtn">削除</button>
-                    </li>
-                  {% endfor %}
-                </ul>
-
-                {% if not pts %}
-                  <p id="emptyHint" class="muted" style="margin:0;">まだタイマーが追加されていません。</p>
-                {% else %}
-                  <p id="emptyHint" class="muted" style="margin:0; display:none;">まだタイマーが追加されていません。</p>
+            {% if selected_program_id %}
+              {% for r in rows %}
+                {% if r.program.id == selected_program_id %}
+                  <p class="timers-label" id="programName">プログラム名：{{ r.program.program_name }}</p>
                 {% endif %}
+              {% endfor %}
+            {% else %}
+              <p class="timers-label" id="programName">プログラム名：</p>
+            {% endif %}
+
+            <section id="listInAProgram">
+            {% if not rows %}
+              <p>まだプログラムがありません。<br>「新規作成」から作成してください。</p>
+            {% elif not selected_program_id %}
+              <p>左上のプルダウンからプログラムを選択してください。</p>
+            {% else %}
+              {% for r in rows %}
+                {% if r.program.id == selected_program_id %}
+                  {% with pts=r.program_timers %}
+                    {% if pts %}
+                      {% for pt in pts %}
+                        <div class="oneTimer"
+                            data-ptid="{{ pt.id }}"
+                            data-timer-id="{{ pt.timer.id }}"
+                            data-category="{{ pt.timer.category }}"
+                            draggable="true">
+                          <p class="category">{{ pt.timer.get_category_display }}</p>
+                          <p class="timerName">{{ pt.timer.name }}</p>
+                          <p class="duration">{% widthratio pt.timer.duration_seconds 60 1 %}分</p>
+
+                          <button type="button" class="trash-btn" data-action="removeFromProgram">
+                            <iconify-icon icon="iconamoon:trash" class="trash-icon"></iconify-icon>
+                          </button>
+                        </div>
+                      {% endfor %}
+                    {% else %}
+                      <p class="empty-program-msg">このプログラムにはまだタイマーが登録されていません。</p>
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+            </section>
+            <div>
+                <button type="button" class="btn" id="program-decide"
+                  {% if not selected_program_id %}disabled{% endif %}>
+                  確定
+                </button>
+            </div>                      
+
+        </div>
+
+        <!-- 中画面 -->
+        <div class="center-disp">
+
+            <section class="timer-add-btn">
+                <button type="button" id="focusAdd" {% if not selected_program_id %}disabled{% endif %}>
+                    <iconify-icon icon="fa:arrow-left" class="timer-add-icon" id="focusAddIcon"></iconify-icon>
+                </button>
+                <button type="button" id="restAdd" {% if not selected_program_id %}disabled{% endif %}>
+                    <iconify-icon icon="fa:arrow-left" class="timer-add-icon"  id="restADDIcon"></iconify-icon>
+                </button>                
+            </section>
+
+        </div>
+
+        <!-- 右画面 -->
+        <div class="right-disp">
+
+            <section class="timer-and-link">
+                <p>作成済みタイマー</p>
+                <a class="btn link-timers-btn" href="{% url 'timers:list' %}">タイマー作成・一覧</a>
+            </section>
+            
+            <div class="right-lists">
+              <div class="focus-block">
+                <p class="timers-label">集中：</p>
+                <section id="focusList">
+                    <!-- カテゴリがfocusに合致するもの -->
+                    {% if my_timers %}
+                      {% for t in my_timers %}
+                        {% if t.category == "focus" %}
+                          <div class="oneTimer" data-timer-id="{{ t.id }}" data-category="{{ t.category}}" tabindex="0">
+                            <p class="category">{{ t.get_category_display }}</p>
+                            <p class="timerName">{{ t.name }}</p>
+                            <p class="duration">
+                              {% widthratio t.duration_seconds 60 1 %}分
+                            </p>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+
+                </section>
               </div>
 
-            {% endwith %}
-          {% endif %}
-        {% endfor %}
+              <div class="rest-block">
+                <p class="timers-label">休憩・リフレッシュ：</p>
+                <section id="restList">
+                    <!-- カテゴリがfocusに合致しないもの -->
+                    {% if my_timers %}
+                      {% for t in my_timers %}
+                        {% if t.category != "focus" %}
+                          <div class="oneTimer" data-timer-id="{{ t.id }}" data-category="{{ t.category}}" tabindex="0">
+                            <p class="category">{{ t.get_category_display }}</p>
+                            <p class="timerName">{{ t.name }}</p>
+                            <p class="duration">
+                              {% widthratio t.duration_seconds 60 1 %}分
+                            </p>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                </section>
+              </div>
+            </div>
 
-      {% endif %}
-    </section>
-
-  </div>
+        </div>
+    </div>
+  {% endwith %}
 </div>
 
-<script>
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-  }
+<!-- プログラム作成・変更モーダル -->
+<section id="programUpsertModal" class="modal"
+ {% if not open_upsert_modal %}hidden{% endif %}>
+    <div id="upsertModalOverlay">
+        <div id="upsertModalArea">
+            <div class="modal-close">
+                <button type="button" id="upsertCloseBtn" class="modal-close-btn">×</button>
+            </div>
 
-  (function () {
-    const editor = document.getElementById("programEditor");
-    const list = document.getElementById("ptList");
-    const timerSelect = document.getElementById("timerSelect");
-    const addBtn = document.getElementById("addTimerBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const dirtyBadge = document.getElementById("dirtyBadge");
-    const saveState = document.getElementById("saveState");
-    const emptyHint = document.getElementById("emptyHint");
+            <!-- 作成 -->
+            <form id="programCreateForm" method="post" action="{% url 'programs:list' %}"
+             {% if upsert_mode != "create" %}hidden{% endif %}>
+              {% csrf_token %}
+              {{ create_form.non_field_errors}}
+              <h2 id="createModalTitle" class="modal-title">プログラム作成</h2>
+              <div class="modal-form">
+                  <label class="modal-label" for="{{ create_form.program_name.id_for_label}}">新規プログラム名：</label>
+                  {{ create_form.program_name }}
+                  {{ create_form.program_name.errors }}
+              </div>
+              <div>
+                  <button class="btn modal-btn" type="submit">作成</button>
+              </div>
+            </form>
 
-    if (!editor || !list || !timerSelect || !addBtn || !saveBtn) return;
+            <!-- 編集 -->
+            {% if selected_program_id %}
+              {% for r in rows %}
+                {% if r.program.id == selected_program_id %}
+                  <form id="programEditForm" method="post" action="{% url 'programs:edit' r.program.id %}"
+                    {% if upsert_mode != "edit" %}hidden{% endif %}>
+                    {% csrf_token %}
+                    {{ r.form.non_field_errors }}
 
-    const saveUrl = editor.dataset.saveUrl;
-
-    let draggingLi = null;
-    let dirty = false;
-
-    function refreshEmptyHint() {
-      const hasItems = list.querySelector("li[data-timerid]") !== null;
-      if (!emptyHint) return;
-      emptyHint.style.display = hasItems ? "none" : "block";
-    }
-
-    function setDirty(on) {
-      dirty = on;
-      if (dirtyBadge) dirtyBadge.style.display = on ? "inline-block" : "none";
-      if (saveState) saveState.textContent = on ? "" : "保存済み";
-    }
-
-    // buildLi は外に置く
-    function buildLi({ timerId, name, min }) {
-      const li = document.createElement("li");
-      li.className = "ptItem";
-      li.dataset.timerid = String(timerId);
-
-      li.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span class="dragHandle" draggable="true" title="ドラッグで並べ替え">≡</span>
-          <div>
-            <div style="font-weight:600;"></div>
-            <div class="muted"></div>
-          </div>
+                    <h2 id="editModalTitle" class="modal-title">プログラム編集</h2>
+                    <div class="modal-form">
+                        <label class="modal-label" for="{{ r.form.program_name.id_for_label }}">プログラム名：</label>
+                        {{ r.form.program_name }}
+                        {{ r.form.program_name.errors }}
+                    </div>
+                    <div>
+                        <button class="btn modal-btn" type="submit">更新</button>
+                    </div>              
+                  </form>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
         </div>
-        <button type="button" class="btn btn-danger removeBtn">削除</button>
-      `;
+    </div>
+</section>
 
-      li.querySelector("div[style*='font-weight']").textContent = name;
-      li.querySelector(".muted").textContent = `${min}分`;
-      return li;
-    }
+<!-- プログラム削除モーダル -->
+<section id="deleteModal" class="modal" hidden>
+    <div id="deleteModalOverlay">
+        <div id="deleteModalArea">
+            <div class="modal-close">
+                <button type="button" id="deleteCloseBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 id="deleteModalTitle" class="modal-title">プログラム削除</h2>
+            <p class="delete-desctiption">このプログラムを削除します。</p>
+            <p id="deleteProgramName">
+              {% if selected_program_id %}
+                {% for r in rows %}
+                  {% if r.program.id == selected_program_id %}
+                    プログラム名：{{ r.program.program_name }}
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                （プログラム名）
+              {% endif %}
+            </p>
 
-    // 追加
-    addBtn.addEventListener("click", () => {
-      const timerId = Number(timerSelect.value);
-      const opt = timerSelect.selectedOptions[0];
-      if (!timerId || !opt) return;
+            {% if selected_program_id %}
+              <form method="post" action="{% url 'programs:delete' selected_program_id %}">
+                {% csrf_token %}
+                <div>
+                    <button class="btn modal-btn" type="submit">削除</button>
+                </div>
+              </form>
+            {% else %}
+              <button class="btn modal-btn" type="button" disabled>削除</button>
+            {% endif %}
+        </div>
+    </div>
+</section>
 
-      const name = opt.dataset.name || opt.textContent || "timer";
-      const min = opt.dataset.min || "";
-
-      list.appendChild(buildLi({ timerId, name, min }));
-      timerSelect.value = "";
-
-      setDirty(true);
-      refreshEmptyHint();
-    });
-
-    // 削除     
-    list.addEventListener("click", (e) => {
-      const rm = e.target.closest(".removeBtn");
-      if (!rm) return;
-
-      const li = rm.closest("li[data-timerid]");
-      if (!li) return;
-
-      li.remove();
-      setDirty(true);
-      refreshEmptyHint();
-    });
-    
-    // drag&drop
-    function getAfterElement(container, y) {
-      const items = [...container.querySelectorAll("li[data-timerid]:not(.dragging)")];
-      return items.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - (box.top + box.height / 2);
-        if (offset < 0 && offset > closest.offset) return { offset, element: child };
-        return closest;
-      }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
-    }
-
-    list.addEventListener("dragstart", (e) => {
-      const handle = e.target.closest(".dragHandle");
-      if (!handle) return;
-
-      const li = handle.closest("li[data-timerid]");
-      if (!li) return;
-
-      draggingLi = li;
-      li.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-    });
-
-    list.addEventListener("dragend", () => {
-      if (draggingLi) draggingLi.classList.remove("dragging");
-      draggingLi = null;
-      setDirty(true);
-    });
-
-    list.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      if (!draggingLi) return;
-
-      const after = getAfterElement(list, e.clientY);
-      if (after == null) list.appendChild(draggingLi);
-      else list.insertBefore(draggingLi, after);
-    });
-
-    // 確定して保存（JSON API）
-    saveBtn.addEventListener("click", async () => {
-      const timerIds = [...list.querySelectorAll("li[data-timerid]")]
-        .map(li => Number(li.dataset.timerid));
-
-      const csrftoken = getCookie("csrftoken");
-
-      try {
-        const res = await fetch(saveUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
-          },
-          credentials: "same-origin",
-          body: JSON.stringify({ timer_ids: timerIds }),
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.ok) {
-          alert(data.error || "保存に失敗しました");
-          return;
-        }
-        setDirty(false);
-      } catch (err) {
-        alert("通信に失敗しました");
-      }
-    });
-
-    window.addEventListener("beforeunload", (e) => {
-      if (!dirty) return;
-      e.preventDefault();
-      e.returnValue = "";
-    });
-
-    setDirty(false);
-    refreshEmptyHint();
-  })();
-</script>
+<!-- JSファイル -->
+<script src="{% static 'js/programs/programs.js' %}" defer></script>
 
 {% endblock %}
