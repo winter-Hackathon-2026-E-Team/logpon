@@ -1,11 +1,9 @@
 # 長いコマンドを省略して打てるようにするための設定
 # PHONYはMakefileで独自コマンドを設定するための宣言
-.PHONY: up down build logs sh migrate mm csu db
+.PHONY: up down build logs sh migrate mm csu db load
 
 up:        ## 起動
 	docker compose up -d
-run:       ## デフォルトタスクを一括投入
-	docker compose exec web python3 manage.py load_tasks
 down:      ## 停止
 	docker compose down
 build:     ## ビルド
@@ -25,3 +23,11 @@ csu:       ## 管理ユーザー作成
 	docker compose exec web python manage.py createsuperuser
 db:		   ## MySQLコンテナに入る
 	docker compose exec -it db mysql -u dev_user -p
+load:
+	docker compose exec web python manage.py loaddata apps/users/fixtures/initial_users.json
+	docker compose exec web python manage.py loaddata apps/timers/fixtures/initial_sounds.json
+	docker compose exec web python manage.py loaddata apps/timers/fixtures/initial_timers.json
+	docker compose exec web python manage.py loaddata apps/programs/fixtures/initial_programs.json
+	docker compose exec web python manage.py loaddata apps/programs/fixtures/initial_program_timers.json
+	docker compose exec web python manage.py loaddata apps/runs/fixtures/initial_program_runs.json
+	docker compose exec web python manage.py loaddata apps/runs/fixtures/initial_timer_runs.json

@@ -60,6 +60,10 @@ class ProgramListCreateView(LoginRequiredMixin, View):
             "rows": rows,
             "my_timers": my_timers,
             "selected_program_id": selected_program_id,  # ★追加
+
+            # 通常時はモーダルを閉じるようにするフラグ
+            "open_upsert_modal": False,
+            "upsert_mode": None,
         })
 
     def post(self, request):
@@ -80,6 +84,10 @@ class ProgramListCreateView(LoginRequiredMixin, View):
             "rows": rows,
             "my_timers": my_timers,
             "selected_program_id": selected_program_id,
+
+            # 作成失敗時に作成モーダルを開いたままにするフラグ
+            "open_upsert_modal": True,
+            "upsert_mode": "create",
         })
 
 
