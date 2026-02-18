@@ -47,6 +47,7 @@ const config = document.getElementById("config");
 
 const postUrl = config?.dataset.postUrl;
 const csrf = config?.dataset.csrf;
+const runId = config?.dataset.programRunId;
 
 programSelect.addEventListener("change", async () => {
   const programId = programSelect.value;
@@ -73,10 +74,8 @@ programSelect.addEventListener("change", async () => {
 
 // 【追加】リダイレクト後の操作
 document.addEventListener("DOMContentLoaded", async () => {
-  const executePage = document.querySelector(".execute-page");
-  const runId = executePage.dataset.programRunId;
-  const apiUrl = executePage.dataset.apiUrl;
   if (!runId) return;
+  const apiUrl = config?.dataset.apiDraftUrl;
 
   // リダイレクト先でのプログラムタイマー展開（fetch GET）
   try {
@@ -96,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.className = "oneTimer";
       btn.id = timer_run.id;
       btn.dataset.status = timer_run.status;
+      btn.dataset.elapsedSec = timer_run.elapsed_sec;
       btn.innerHTML = `<p>${timer_run.timer_name_snapshot}</p>`;
       timerList.appendChild(btn);
     });
@@ -105,38 +105,72 @@ document.addEventListener("DOMContentLoaded", async () => {
       `option[value="${programId}"]`,
     );
     selectedOption.selected = true;
+    // プルダウンメニューにprogram_run.statusを付与
+    const programRunStatus = data.runs_data.program_run.status;
+    selectedOption.dataset.programRunStatus = programRunStatus;
   } catch (error) {
     console.error(error.message);
   }
 });
 
-// プログラムstart（初回実行）
+// プログラムstart, resume, pause
 const btn = document.getElementById("startBtn");
 btn.addEventListener("click", async (e) => {
-  const startIcon = document.getElementById("startIcon");
-  const runId = startIcon.dataset.programRunId;
   if (!runId) return;
-  const apiUrl = startIcon.dataset.apiUrl;
-  const csrf = startIcon.dataset.csrf;
-  const firstTimerStatus = timerList.querySelector(
-    'button[data-status = "pending"]',
-  );
-  const timerRunId = firstTimerStatus.id;
-  console.log(firstTimerStatus);
-  console.log(timerRunId);
-  console.log(e.target, "送信");
-  console.log(apiUrl);
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-        "X-CSRFToken": csrf,
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: JSON.stringify({ timer_run_id: timerRunId }),
-    });
-  } catch (error) {
-    console.error(error.message);
+  const startIcon = btn.querySelector("#startIcon");
+  const pauseIcon = btn.querySelector("#pauseIcon");
+  startIcon.classList.toggle("hidden");
+  pauseIcon.classList.toggle("hidden");
+  /*
+  【全体】
+  1.ボタンのアイコンステータスを取得して、start, pauseで条件分岐する
+  2.program_runs.statusを調べて、draftであれば、プログラム初期実行（start）を行い、pausedであれば、プログラム再開（resume）を行う（finished, interruptedの場合はどうするか？）
+  3.それぞれのstatusでさらに条件分岐を行い、各statusにあうapiUrlを取得する
+  【draft】
+  1.order_indexが最も若く、timer_runs.statusがpendingのものを取得する
+  2.取得したものからtimer_run.id, elapsed_secをPOSTする
+  【resume】
+  1.timer_run.statusがpausedのものを取得する
+  2.取得したものからtimer_run.id, elapsed_secをPOSTする
+  【finishedからの再実行】
+  1.program_run_idをURLで送り、そのprogram_run_idに紐づくtimer_runs.statusを操作する
+  2.order_indexが最も若い、timer_run.statusをrunningにして、それ以外のtimer_runs.statusをpendingにする
+  【interrupted】
+  1.timer_run.statusがinterruptedを取得する
+  2.取得したものからtimer_run.id, elapsed_secをPOSTする
+  */
+  if (e.target.dataset.iconStatus === "start") {
+    console.log("start送信");
+    const selectedOption = programSelect.selectedOptions[0];
+    // draft POST
+    if (selectedOption.dataset.programRunStatus === 'draft') {
+      console.log("draftPOST");
+      const apiUrl = config?.dataset.apiStartUrl;
+      const timerStatus = timerList.querySelector(
+        'button[data-status = "pending"]',
+      );
+      const timerRunId = timerStatus.id;
+      const elapsedSec = timerStatus.dataset.elapsedSec;
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            "X-CSRFToken": csrf,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            timer_run_id: timerRunId,
+            elapsedSec: elapsedSec,
+          }),
+        });
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+    // resume POST
+    
+  } else if (e.target.dataset.iconStatus === "pause") {
+    console.log("pause送信");
   }
 });

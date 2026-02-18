@@ -9,12 +9,7 @@
 
 {% block content %}
 <!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
-<div class="execute-page"
-    {% if program_run_id %}
-        data-program-run-id="{{ program_run_id }}"
-        data-api-url="{% url 'runs:program-runs-api' program_run_id %}"
-    {% endif %}
->
+<div class="execute-page">
     <div class="execute-zone">
         <!-- 左画面 -->
         <div class="left-disp">
@@ -33,6 +28,17 @@
             <div
             id="config"
             data-post-url="{% url 'runs:program-runs' %}"
+            {% if program_run_id %}
+                data-program-run-id="{{ program_run_id }}"
+                data-api-draft-url="{% url 'runs:program-runs-api' program_run_id %}"
+                data-api-start-url="{% url 'runs:program-runs-start' program_run_id %}"
+                data-api-resume-url="{% url 'runs:program-runs-resume' program_run_id %}"
+                data-api-pause-url="{% url 'runs:program-runs-pause' program_run_id %}"
+                data-api-skip-url="{% url 'runs:program-runs-skip' program_run_id %}"
+                data-api-next-url="{% url 'runs:program-runs-next' program_run_id %}"
+                data-api-interrupt-url="{% url 'runs:program-runs-interrupt' program_run_id %}"
+                data-api-progress-url="{% url 'runs:program-runs-progress' program_run_id %}"
+            {% endif %}
             data-csrf="{{ csrf_token }}"
             hidden
             ></div>
@@ -40,14 +46,8 @@
             <section class="timer-execute">
                 <button id="startBtn" type="button">
                     <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
-                    <iconify-icon icon="uil:play" id="startIcon" class=""
-                    {% if program_run_id %}
-                        data-program-run-id="{{ program_run_id }}"
-                        data-api-url="{% url 'runs:program-runs-start' program_run_id %}"
-                        data-csrf="{{ csrf_token }}"
-                    {% endif %}>
-                    </iconify-icon>
-                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
+                    <iconify-icon icon="uil:play" id="startIcon" class="" data-icon-status="start"></iconify-icon>
+                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden" data-icon-status="pause"></iconify-icon>
                 </button>
                 <div class="timerFace">
                     <p id="currentTimerName">Hackathon</p>

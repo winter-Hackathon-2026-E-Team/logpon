@@ -23,6 +23,7 @@ def selector_exist_runs(program_run_id):
         'category_snapshot',
         'status',
         'elapsed_sec',
+        'memo',
         )
     return (program_run, timer_runs)
 
