@@ -3,9 +3,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 
-from apps.runs.models import TimerRun 
+from apps.runs.models import TimerRun
+
 
 class TimerRunsMemoView(LoginRequiredMixin, View):
     def post(self, request, timer_run_id: int):
@@ -25,23 +25,19 @@ class TimerRunsMemoView(LoginRequiredMixin, View):
         else:
             memo = (request.POST.get("memo") or "").strip()
 
+        # validation
         if len(memo) > 5000:
             return JsonResponse({"error": "メモが長すぎます"}, status=400)
 
         run.memo = memo
 
-        if hasattr(run, "updated_at"):
-            run.updated_at = timezone.now()
-            run.save(update_fields=["memo", "updated_at"])
-            updated_at = run.updated_at.isoformat()
-        else:
-            run.save(update_fields=["memo"])
-            updated_at = None
+        run.save(update_fields=["memo"])
 
+        updated_at = getattr(run, "updated_at", None)
         return JsonResponse({
             "timer_run_id": run.id,
             "memo": run.memo,
-            "updated_at": updated_at,
+            "updated_at": updated_at.isoformat() if updated_at else None,
         })
 
 
