@@ -113,12 +113,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// プログラムstart, resume, pause
+// プログラムstart, resume, pause, finished, interrupted
 const btn = document.getElementById("startBtn");
 btn.addEventListener("click", async (e) => {
   if (!runId) return;
   const startIcon = btn.querySelector("#startIcon");
   const pauseIcon = btn.querySelector("#pauseIcon");
+  const selectedOption = programSelect.selectedOptions[0];
   startIcon.classList.toggle("hidden");
   pauseIcon.classList.toggle("hidden");
   /*
@@ -139,11 +140,11 @@ btn.addEventListener("click", async (e) => {
   1.timer_run.statusがinterruptedを取得する
   2.取得したものからtimer_run.id, elapsed_secをPOSTする
   */
+  // 開始ボタン押下
   if (e.target.dataset.iconStatus === "start") {
     console.log("start送信");
-    const selectedOption = programSelect.selectedOptions[0];
-    // draft POST
-    if (selectedOption.dataset.programRunStatus === 'draft') {
+    // プログラム初回実行（start）
+    if (selectedOption.dataset.programRunStatus === "draft") {
       console.log("draftPOST");
       const apiUrl = config?.dataset.apiStartUrl;
       const timerStatus = timerList.querySelector(
@@ -164,13 +165,52 @@ btn.addEventListener("click", async (e) => {
             elapsedSec: elapsedSec,
           }),
         });
+        const data = await res.json();
       } catch (error) {
         console.error(error.message);
       }
     }
-    // resume POST
-    
+    // プログラム再開（resume）
+    else if (selectedOption.dataset.programRunStatus === "resume") {
+      console.log("resumePOST");
+    }
+    // プログラム終了後の再実行（finished）
+    else if (selectedOption.dataset.programRunStatus === "finished") {
+      console.log("finishedPOST");
+    }
+    // プログラム中断後の再実行（interrupted）
+    else if (selectedOption.dataset.programRunStatus === "interrupted") {
+      console.log("interruptedPOST");
+    }
+
+    // 一時停止ボタン押下
   } else if (e.target.dataset.iconStatus === "pause") {
     console.log("pause送信");
+    if (selectedOption.dataset.programRunStatus === "running") {
+      console.log("pausePOST");
+      const apiUrl = config?.dataset.apiPauseUrl;
+      const timerStatus = timerList.querySelector(
+        'button[data-status = "running"]',
+      );
+      const timerRunId = timerStatus.id;
+      const elapsedSec = timerStatus.dataset.elapsedSec;
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            "X-CSRFToken": csrf,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            timer_run_id: timerRunId,
+            elapsedSec: elapsedSec,
+          }),
+        });
+        const data = await res.json();
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
   }
 });
