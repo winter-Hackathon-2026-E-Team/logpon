@@ -113,16 +113,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// プログラムstart, resume, pause, finished, interrupted
 const btn = document.getElementById("startBtn");
-btn.addEventListener("click", async (e) => {
-  if (!runId) return;
-  const startIcon = btn.querySelector("#startIcon");
-  const pauseIcon = btn.querySelector("#pauseIcon");
-  const selectedOption = programSelect.selectedOptions[0];
-  startIcon.classList.toggle("hidden");
-  pauseIcon.classList.toggle("hidden");
-  /*
+const startIcon = btn.querySelector("#startIcon");
+const pauseIcon = btn.querySelector("#pauseIcon");
+
+// プログラムstart, resume, paused, finished, interrupted
+/*
   【全体】
   1.ボタンのアイコンステータスを取得して、start, pauseで条件分岐する
   2.program_runs.statusを調べて、draftであれば、プログラム初期実行（start）を行い、pausedであれば、プログラム再開（resume）を行う（finished, interruptedの場合はどうするか？）
@@ -140,7 +136,14 @@ btn.addEventListener("click", async (e) => {
   1.timer_run.statusがinterruptedを取得する
   2.取得したものからtimer_run.id, elapsed_secをPOSTする
   */
-  // 開始ボタン押下
+
+// 開始ボタン押下
+btn.addEventListener("click", async (e) => {
+  if (!runId) return;
+  const selectedOption = programSelect.selectedOptions[0];
+  startIcon.classList.toggle("hidden");
+  pauseIcon.classList.toggle("hidden");
+
   if (e.target.dataset.iconStatus === "start") {
     console.log("start送信");
     // プログラム初回実行（start）
@@ -162,17 +165,56 @@ btn.addEventListener("click", async (e) => {
           },
           body: JSON.stringify({
             timer_run_id: timerRunId,
-            elapsedSec: elapsedSec,
+            elapsed_sec: elapsedSec,
           }),
         });
         const data = await res.json();
+        // プルダウンメニューのprogram_run.statusを更新
+        const programRunStatus = data.runs_data.program_run.status;
+        selectedOption.dataset.programRunStatus = programRunStatus;
+        // 該当タイマーのstatusを更新
+        const currentTimer = timerList.getElementById(
+          `"{data.runs_data.current_timer.id}"`,
+        );
+        currentTimer.dataset.status = data.runs_data.current_timer.status;
       } catch (error) {
         console.error(error.message);
       }
     }
     // プログラム再開（resume）
-    else if (selectedOption.dataset.programRunStatus === "resume") {
+    else if (selectedOption.dataset.programRunStatus === "paused") {
       console.log("resumePOST");
+      const apiUrl = config?.dataset.apiResumeUrl;
+      const timerStatus = timerList.querySelector(
+        'button[data-status = "paused"]',
+      );
+      const timerRunId = timerStatus.id;
+      const elapsedSec = timerStatus.dataset.elapsedSec;
+      try {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            "X-CSRFToken": csrf,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            timer_run_id: timerRunId,
+            elapsed_sec: elapsedSec,
+          }),
+        });
+        const data = await res.json();
+        // プルダウンメニューのprogram_run.statusを更新
+        // const programRunStatus = data.runs_data.program_run.status;
+        // selectedOption.dataset.programRunStatus = programRunStatus;
+        // // 該当タイマーのstatusを更新
+        // const pausedTimer = timerList.getElementById(
+        //   `"{data.runs_data.paused_timer.id}"`,
+        // );
+        // pausedTimer.dataset.status = data.runs_data.paused_timer.status;
+      } catch (error) {
+        console.error(error.message);
+      }
     }
     // プログラム終了後の再実行（finished）
     else if (selectedOption.dataset.programRunStatus === "finished") {
@@ -182,9 +224,16 @@ btn.addEventListener("click", async (e) => {
     else if (selectedOption.dataset.programRunStatus === "interrupted") {
       console.log("interruptedPOST");
     }
+  }
+});
 
-    // 一時停止ボタン押下
-  } else if (e.target.dataset.iconStatus === "pause") {
+// 一時停止ボタン押下
+btn.addEventListener("click", async (e) => {
+  if (!runId) return;
+  const selectedOption = programSelect.selectedOptions[0];
+  startIcon.classList.toggle("hidden");
+  pauseIcon.classList.toggle("hidden");
+  if (e.target.dataset.iconStatus === "pause") {
     console.log("pause送信");
     if (selectedOption.dataset.programRunStatus === "running") {
       console.log("pausePOST");
@@ -204,10 +253,18 @@ btn.addEventListener("click", async (e) => {
           },
           body: JSON.stringify({
             timer_run_id: timerRunId,
-            elapsedSec: elapsedSec,
+            elapsed_sec: elapsedSec,
           }),
         });
         const data = await res.json();
+        // プルダウンメニューのprogram_run.statusを更新
+        const programRunStatus = data.runs_data.program_run.status;
+        selectedOption.dataset.programRunStatus = programRunStatus;
+        // 該当タイマーのstatusを更新
+        const pausedTimer = timerList.getElementById(
+          `"{data.runs_data.paused_timer.id}"`,
+        );
+        pausedTimer.dataset.status = data.runs_data.paused_timer.status;
       } catch (error) {
         console.error(error.message);
       }
