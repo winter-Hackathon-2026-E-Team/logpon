@@ -49,10 +49,8 @@
                     <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
                 </button>
                 <div class="timerFace">
-                    <p id="currentTimerName">Hackathon</p>
-                    <p id="remainingTime">
-                        12:34
-                    </p>
+                    <p id="currentTimerName"></p>
+                    <p id="remainingTime"></p>
                 </div>
             </section>
         </div>
@@ -144,12 +142,6 @@
 <script id="lastRunInfo" type="application/json">
 {{ last_run_info_json|safe }}
 </script>
-
-<!-- サウンドマップ（サウンドIDとサウンドファイルのパス） -->
-<script id="soundMap" type="application/json">
-{{ sound_map_json|safe }}
-</script>
-
 
 <script src="{% static 'js/runs/program-runs.js' %}" defer></script>
 

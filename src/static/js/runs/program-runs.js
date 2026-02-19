@@ -216,8 +216,8 @@ function renderTimerList() {
     btn.dataset.status = tr.status;
 
     // サウンドのIDがあればそれもdatasetに追加
-    if (tr.sound_id_snapshot != null) {
-      btn.dataset.soundId = tr.sound_id_snapshot;
+    if (tr.sound_file_snapshot) {
+      btn.dataset.soundFile = tr.sound_file_snapshot;
     }
 
     // btnにstatusに合わせたクラスを付与
@@ -529,6 +529,21 @@ async function sendProgressIfNeeded(force = false) {
   progressState.lastSentElapsedSec = elapsed;
 }
 
+// サウンドのURLを作る関数
+// sound_file_snapshot ("sounds/bell.mp3") から再生URLを作る
+function buildSoundUrl(soundFile) {
+  if (!soundFile) return null;
+
+  // 例: "sounds/bell.mp3" → "/static/sounds/bell.mp3"
+  // ※ STATIC_URL を "/static/" と仮定
+  const base = "/static/";
+
+  // 先頭スラッシュ有無などを吸収
+  const cleaned = String(soundFile).replace(/^\/+/, ""); // "/sounds/x" → "sounds/x"
+  return base + cleaned;
+}
+
+
 // audioの自動再生を許可させておく関数
 function unlockAudioOnce() {
   if (audioUnlocked) return;
@@ -536,34 +551,29 @@ function unlockAudioOnce() {
 
   // 現在タイマーの音で解禁（なければ何もしない）
   const tr = getCurrentTimerRun();
-  const soundId = tr?.sound_id_snapshot;
-  const url = soundId ? soundMap[String(soundId)] : null;
+  const url = buildSoundUrl(tr?.sound_file_snapshot);
   if (!url) return;
 
   const audio = new Audio(url);
   audio.volume = 0.001; // 極小音（実質聞こえないくらい）
 
   const p = audio.play();
-  if (p && typeof p.then === "function") {
-    p.then(() => {
-      // すぐ止める（ユーザー操作で再生した実績を作る）
-      setTimeout(() => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.volume = 1;
-      }, 50); //あまりに短すぎると再生したと判定されないことがあるため50ms
-    }).catch(() => {
-      // 失敗しても無視（終了時に再挑戦）
-    });
-  }
+  p.then(() => {
+    // すぐ止める（ユーザー操作で再生した実績を作る）
+    setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 1;
+    }, 50); //あまりに短すぎると再生したと判定されないことがあるため50ms
+  }).catch(() => {
+    // 失敗しても無視（終了時に再挑戦）
+  });
 }
+
 
 // タイマーの終了音を鳴らす関数
 function playFinishSoundForTimerRun(tr) {
-  const soundId = tr?.sound_id_snapshot;
-  if (!soundId) return;
-
-  const url = soundMap[String(soundId)];
+  const url = buildSoundUrl(tr?.sound_file_snapshot);
   if (!url) return;
 
   const audio = new Audio(url);
