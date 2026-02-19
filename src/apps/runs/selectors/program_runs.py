@@ -52,3 +52,15 @@ def selector_pause_programRun_timerRun(program_run_id, timer_run_id):
         'status',
     ).first()
     return (program_run, timer_run)
+
+# resume
+def selector_resume_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    return (program_run, timer_run)

@@ -26,3 +26,10 @@ def serialize_pause_runs(program_run, timer_run):
     data['program_run'] = program_run
     data['paused_timer'] = timer_run
     return data
+
+# resume時の整形
+def serialize_resume_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['paused_timer'] = timer_run
+    return data

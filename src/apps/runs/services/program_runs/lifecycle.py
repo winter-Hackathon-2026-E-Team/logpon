@@ -33,3 +33,17 @@ def status_pause(program_run_id, timer_run_id, elapsed_sec:int):
     timer_run.elapsed_sec += elapsed_sec
     timer_run.updated_at = timezone.now()
     timer_run.save()
+
+# プログラムresume（再開）
+@transaction.atomic
+def status_resume(program_run_id, timer_run_id, elapsed_sec:int):
+    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+    program_run.status = ProgramRun.Status.RUNNING
+    program_run.updated_at = timezone.now()
+    program_run.save()
+
+    timer_run = TimerRun.objects.select_for_update().get(id=timer_run_id, program_run_id=program_run_id)
+    timer_run.status = TimerRun.Status.RUNNING
+    timer_run.elapsed_sec += elapsed_sec
+    timer_run.updated_at = timezone.now()
+    timer_run.save()
