@@ -34,6 +34,11 @@
             id="config"
             data-post-url="{% url 'runs:program-runs' %}"
             data-csrf="{{ csrf_token }}"
+            data-start-url-template="/program-runs/__ID__/start"
+            data-resume-url-template="/program-runs/__ID__/resume"
+            data-progress-url-template="/program-runs/__ID__/progress"
+            data-skip-url-template="/program-runs/__ID__/skip"
+            data-next-url-template="/program-runs/__ID__/next"
             hidden
             ></div>
 
@@ -109,7 +114,43 @@
     </div>
 </section>
 
+<!-- 復元確認モーダル -->
+<section id="resumeModal" class="modal" hidden>
+    <div id="resumeModalOverlay">
+        <div id="resumeModalArea">
+            <div class="modal-close">
+                <button type="button" id="resumeCloseBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 class="modal-title">プログラム復元</h2>
+            <p id="resumeInfoText">
+                X月X日X時X分ごろに<br>
+                中断したプログラムがあります。
+            </p>
+            <p>
+                プログラムの状態を復元しますか？<br>
+                （「破棄」を選んだ場合は、二度と復元できません）
+            </p>
+
+            <div class="modal-actions">
+                <button type="button" class="btn" id="resumeYesBtn">復元</button>
+                <button type="button" class="btn" id="resumeNoBtn">破棄</button>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- JSファイル -->
- <script src="{% static 'js/runs/program-runs.js' %}" defer></script>
+<!-- 前回中断データの有無をHTMLに埋め込み -->
+<script id="lastRunInfo" type="application/json">
+{{ last_run_info_json|safe }}
+</script>
+
+<!-- サウンドマップ（サウンドIDとサウンドファイルのパス） -->
+<script id="soundMap" type="application/json">
+{{ sound_map_json|safe }}
+</script>
+
+
+<script src="{% static 'js/runs/program-runs.js' %}" defer></script>
 
 {% endblock %}
