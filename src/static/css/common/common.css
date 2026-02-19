@@ -96,6 +96,11 @@
     z-index: 1000;
 }
 
+#modal[hidden],#programUpsertModal[hidden], 
+#deleteModal[hiiden] {
+    display: none !important;
+}
+
 #modalOverlay, #upsertModalOverlay, #deleteModalOverlay {
     background: rgba(255, 255, 255, 0.8);
     width: 100%;
