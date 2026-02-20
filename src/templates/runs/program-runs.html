@@ -9,7 +9,12 @@
 
 {% block content %}
 <!-- 最初のdivはauth-wrapperと共通化して問題ないかを調べる -->
-<div class="execute-page">
+<div class="execute-page"
+    {% if program_run_id %}
+        data-program-run-id="{{ program_run_id }}"
+        data-api-url="{% url 'runs:program-runs-api' program_run_id %}"
+    {% endif %}
+>
     <div class="execute-zone">
         <!-- 左画面 -->
         <div class="left-disp">
@@ -28,32 +33,24 @@
             <div
             id="config"
             data-post-url="{% url 'runs:program-runs' %}"
-            {% if program_run_id %}
-                data-program-run-id="{{ program_run_id }}"
-                data-api-draft-url="{% url 'runs:program-runs-api' program_run_id %}"
-                data-api-start-url="{% url 'runs:program-runs-start' program_run_id %}"
-                data-api-resume-url="{% url 'runs:program-runs-resume' program_run_id %}"
-                data-api-pause-url="{% url 'runs:program-runs-pause' program_run_id %}"
-                data-api-skip-url="{% url 'runs:program-runs-skip' program_run_id %}"
-                data-api-next-url="{% url 'runs:program-runs-next' program_run_id %}"
-                data-api-interrupt-url="{% url 'runs:program-runs-interrupt' program_run_id %}"
-                data-api-progress-url="{% url 'runs:program-runs-progress' program_run_id %}"
-            {% endif %}
             data-csrf="{{ csrf_token }}"
+            data-start-url-template="/program-runs/__ID__/start"
+            data-resume-url-template="/program-runs/__ID__/resume"
+            data-progress-url-template="/program-runs/__ID__/progress"
+            data-skip-url-template="/program-runs/__ID__/skip"
+            data-next-url-template="/program-runs/__ID__/next"
             hidden
             ></div>
 
             <section class="timer-execute">
                 <button id="startBtn" type="button">
                     <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
-                    <iconify-icon icon="uil:play" id="startIcon" class="" data-icon-status="start"></iconify-icon>
-                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden" data-icon-status="pause"></iconify-icon>
+                    <iconify-icon icon="uil:play" id="startIcon" class=""></iconify-icon>
+                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
                 </button>
                 <div class="timerFace">
-                    <p id="currentTimerName">Hackathon</p>
-                    <p id="remainingTime">
-                        12:34
-                    </p>
+                    <p id="currentTimerName"></p>
+                    <p id="remainingTime"></p>
                 </div>
             </section>
         </div>
@@ -115,7 +112,37 @@
     </div>
 </section>
 
+<!-- 復元確認モーダル -->
+<section id="resumeModal" class="modal" hidden>
+    <div id="resumeModalOverlay">
+        <div id="resumeModalArea">
+            <div class="modal-close">
+                <button type="button" id="resumeCloseBtn" class="modal-close-btn">×</button>
+            </div>
+            <h2 class="modal-title">プログラム復元</h2>
+            <p id="resumeInfoText">
+                X月X日X時X分ごろに<br>
+                中断したプログラムがあります。
+            </p>
+            <p>
+                プログラムの状態を復元しますか？<br>
+                （「破棄」を選んだ場合は、二度と復元できません）
+            </p>
+
+            <div class="modal-actions">
+                <button type="button" class="btn" id="resumeYesBtn">復元</button>
+                <button type="button" class="btn" id="resumeNoBtn">破棄</button>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- JSファイル -->
- <script src="{% static 'js/runs/program-runs.js' %}" defer></script>
+<!-- 前回中断データの有無をHTMLに埋め込み -->
+<script id="lastRunInfo" type="application/json">
+{{ last_run_info_json|safe }}
+</script>
+
+<script src="{% static 'js/runs/program-runs.js' %}" defer></script>
 
 {% endblock %}

@@ -9,6 +9,7 @@
     display: flex;
     align-items: center;
     margin-top: 22px;
+    gap: 40px;
 }
 
 .left-disp {
@@ -94,6 +95,11 @@
 #currentTimerName {
     font-size: 1.25rem;
     margin: 107px 0 56px;
+    padding: 0 30px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
 }
 
 #remainingTime {
@@ -118,6 +124,7 @@
     flex-direction: column;
     gap: 13px;
     align-items: center;
+    overflow: auto;
 }
 /* ここまで */
 
@@ -126,29 +133,41 @@
     transform: scale(1);
     transition: transform 0.2s ease-out;
     cursor: pointer;
+    background: var(--color-bg);
+    display: grid;
+    grid-template-columns: 110px 1fr 80px;
+    align-items: center;
+    justify-items: start;
 }
 /* ここまで */
-.oneTimer[data-category="休憩"],
-.oneTimer[data-category="リフレッシュ"] {
+.oneTimer[data-category="break"],
+.oneTimer[data-category="refresh"] {
     cursor: default;
 }
 
-.oneTimer[data-category="集中"]:hover {
+.oneTimer[data-category="focus"]:hover {
     transform: scale(1.02);
 }
 
+.oneTimer p {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+}
 .category {
     font-size: 1rem;
-    flex: 1;
+    
 }
 
 .timerName {
-    flex: 2;
+    font-size: 1.25rem;
 }
 
 .duration {
-    flex: 1;
-    text-align: right;
+    font-size: 1.25rem;
+    justify-self: end;
 }
 
 .finishedOneTimer {
