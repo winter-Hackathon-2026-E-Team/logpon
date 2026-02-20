@@ -47,3 +47,20 @@ def status_resume(program_run_id, timer_run_id, elapsed_sec:int):
     timer_run.elapsed_sec += elapsed_sec
     timer_run.updated_at = timezone.now()
     timer_run.save()
+
+# プログラムnext（自動遷移）
+@transaction.atomic
+def status_next(program_run_id, timer_run_id, elapsed_sec:int):
+    timer_run = TimerRun.objects.select_for_update().get(id=timer_run_id, program_run_id=program_run_id)
+    timer_run.status = TimerRun.Status.FINISHED
+    timer_run.ended_at = timezone.now()
+    timer_run.elapsed_sec += elapsed_sec
+    timer_run.updated_at = timezone.now()
+
+    '''
+    1.timer_run.statusがfinishedの次のタイマー(next_timer)を取得する
+    2.次のタイマーがあるか、ないかで条件分岐をする
+    3.次のタイマーがあれば、
+    '''
+
+    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
