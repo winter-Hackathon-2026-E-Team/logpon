@@ -20,6 +20,7 @@ def selector_exist_runs(program_run_id):
         'order_index_snapshot',
         'timer_name_snapshot',
         'duration_sec_snapshot',
+        'sound_file_snapshot',
         'category_snapshot',
         'status',
         'elapsed_sec',
