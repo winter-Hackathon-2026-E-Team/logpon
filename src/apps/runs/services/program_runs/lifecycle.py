@@ -56,11 +56,24 @@ def status_next(program_run_id, timer_run_id, elapsed_sec:int):
     timer_run.ended_at = timezone.now()
     timer_run.elapsed_sec += elapsed_sec
     timer_run.updated_at = timezone.now()
+    timer_run.save()
 
-    '''
-    1.timer_run.statusがfinishedの次のタイマー(next_timer)を取得する
-    2.次のタイマーがあるか、ないかで条件分岐をする
-    3.次のタイマーがあれば、
-    '''
+    next_order_index = timer_run.order_index_snapshot + 1
+    is_next_timer = TimerRun.objects.filter(program_run_id=program_run_id, order_index_snapshot=next_order_index).exists()
 
-    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+    if is_next_timer:
+        next_timer = TimerRun.objects.select_for_update().get(program_run_id=program_run_id, order_index_snapshot=next_order_index)
+        next_timer.status = TimerRun.Status.RUNNING
+        next_timer.started_at = timezone.now()
+        next_timer.updated_at = timezone.now()
+        next_timer.save()
+        return next_timer
+
+    else:
+        program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+        program_run.status = ProgramRun.Status.FINISHED
+        program_run.ended_at = timezone.now()
+        program_run.updated_at = timezone.now()
+        program_run.save()
+
+    return None

@@ -33,3 +33,10 @@ def serialize_resume_runs(program_run, timer_run):
     data['program_run'] = program_run
     data['paused_timer'] = timer_run
     return data
+
+# next時の整形
+def serialize_next_runs(program_run, finished_timer, next_timer):
+    data = {}
+    data['program_run'] = program_run
+    data['finished_timer'] = finished_timer
+    data['next_timer'] = next_timer
