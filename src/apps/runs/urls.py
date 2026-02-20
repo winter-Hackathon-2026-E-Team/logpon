@@ -13,6 +13,7 @@ from .views.program_runs import (
     ProgramProgressView,
 )
 
+from .views.records import RecordsView
 from .views import timer_runs, records, daily_reports
 
 app_name = 'runs'
@@ -36,6 +37,8 @@ urlpatterns = [
 
     # 実施記録確認
     path('records/', records.RecordsView.as_view(), name='records'),
+    path('records/data', records.RecordsDataView.as_view(), name='records-data'),  # 追加
+
 
     # 日報
     path('daily-reports/', daily_reports.DailyReportsView.as_view(), name='daily-reports'),
