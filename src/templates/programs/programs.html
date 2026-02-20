@@ -100,12 +100,16 @@
         <div class="center-disp">
 
             <section class="timer-add-btn">
+              <div class="arrow-zone">
                 <button type="button" id="focusAdd" {% if not selected_program_id %}disabled{% endif %}>
                     <iconify-icon icon="fa:arrow-left" class="timer-add-icon" id="focusAddIcon"></iconify-icon>
                 </button>
+              </div>
+              <div class="arrow-zone">
                 <button type="button" id="restAdd" {% if not selected_program_id %}disabled{% endif %}>
                     <iconify-icon icon="fa:arrow-left" class="timer-add-icon"  id="restADDIcon"></iconify-icon>
-                </button>                
+                </button>
+              </div>                
             </section>
 
         </div>
