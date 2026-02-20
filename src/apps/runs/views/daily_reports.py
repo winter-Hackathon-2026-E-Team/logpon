@@ -40,10 +40,6 @@ def _to_hhmm(dt) -> str:
 
 
 def _format_duration_min(sec: int) -> str:
-    """
-    1件ごとの表示は「分」単位（切り捨て）。
-    ※合計はelapsed_sec(秒)から算出するので、表示上の丸めと差が出る可能性はある。
-    """
     sec = max(0, int(sec or 0))
     m = sec // 60
     h = m // 60
@@ -59,24 +55,46 @@ def _build_daily_report_text(timer_runs: list[TimerRun], r: Range) -> str:
 
     lines: list[str] = []
     lines.append("")
-
+    
     # started_at → id順
     timer_runs = sorted(timer_runs, key=lambda tr: ((tr.started_at or r.start), tr.id))
 
     for tr in timer_runs:
-        start = _to_hhmm(getattr(tr, "started_at", None))
-        end_dt = getattr(tr, "ended_at", None) or getattr(tr, "updated_at", None)
-        end = _to_hhmm(end_dt)
+        started_at = getattr(tr, "started_at", None)
+        ended_at = getattr(tr, "ended_at", None)
+        paused_at = getattr(tr, "paused_at", None)
+        updated_at = getattr(tr, "updated_at", None)
+        status = getattr(tr, "status", None)
+
+        start_str = _to_hhmm(started_at)
+
+        # 終了時刻の決定（statusに応じて安全に）
+        if ended_at:
+            end_dt = ended_at
+        elif status == TimerRun.Status.PAUSED:
+            end_dt = paused_at or updated_at or timezone.now()
+        elif status == TimerRun.Status.RUNNING:
+            end_dt = None # “今”にしたくないなら None にして --:-- にできる
+        else:
+            end_dt = updated_at or paused_at or timezone.now()
+
+        end_str = _to_hhmm(end_dt)
 
         name = getattr(tr, "timer_name_snapshot", None) or "（無名タイマー）"
         elapsed = int(getattr(tr, "elapsed_sec", 0) or 0)
         memo = (getattr(tr, "memo", "") or "").strip()
+        if status in (TimerRun.Status.RUNNING, TimerRun.Status.PAUSED):
+            # 時刻が取れてるなら「HH:MM（途中）」、取れないなら「途中」
+            end_str = f"{end_str}（途中）" if end_str != "--:--" else "途中"
 
-        lines.append(f"・{start} ~ {end}（{_format_duration_min(elapsed)}） {name}")
+        lines.append(f"・{start_str} ~ {end_str}（{_format_duration_min(elapsed)}） {name}")
         if memo:
             lines.append(f"  - {memo}")
 
+    
     return "\n".join(lines)
+
+
 
 
 class DailyReportsView(LoginRequiredMixin, View):
@@ -87,24 +105,23 @@ class DailyReportsView(LoginRequiredMixin, View):
         now_local = timezone.localtime(timezone.now())
         r = _calc_daily_range_3am(now_local)
 
-        #1) カテゴリは集中のみ
-        #2) statusは「確定した記録」のみ（未開始/途中は出さない）
         qs = (
             TimerRun.objects.select_related("program_run")
             .filter(program_run__user=request.user)
             .filter(started_at__isnull=False)
             .filter(started_at__gte=r.start, started_at__lt=r.end)
+
             .filter(category_snapshot=TimerRun.Category.FOCUS)
-            .filter(status__in=[
-                TimerRun.Status.FINISHED,
-                TimerRun.Status.SKIPPED,
-                TimerRun.Status.INTERRUPTED,
-            ])
+
+            #pending（初期状態）だけ除外 → running/paused/finished/skipped/interrupted は出す
+            .exclude(status=TimerRun.Status.PENDING)
+
             .order_by("started_at", "id")
         )
 
         timer_runs = list(qs)
 
+        #合計も「表示対象（pending以外）」の elapsed_sec 合計
         total_sec = sum(int(tr.elapsed_sec or 0) for tr in timer_runs)
         total_hours = total_sec // 3600
         total_minutes = (total_sec % 3600) // 60
