@@ -20,7 +20,7 @@ ALLOWED_STATUSES = {
     TimerRun.Status.INTERRUPTED,
 }
 
-# 休憩除外（集中のみ）
+#集中のみ
 FOCUS_CATEGORY_VALUES = {"focus", "集中"}  
 
 def _iso_local(dt):
