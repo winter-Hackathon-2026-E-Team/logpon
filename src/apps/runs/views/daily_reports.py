@@ -40,6 +40,10 @@ def _to_hhmm(dt) -> str:
 
 
 def _format_duration_min(sec: int) -> str:
+    """
+    1件ごとの表示は「分」単位（切り捨て）。
+    ※合計はelapsed_sec(秒)から算出するので、表示上の丸めと差が出る可能性はある。
+    """
     sec = max(0, int(sec or 0))
     m = sec // 60
     h = m // 60
@@ -49,28 +53,16 @@ def _format_duration_min(sec: int) -> str:
     return f"{m}分"
 
 
-def _is_focus(tr):
-    cat = getattr(tr, "category_snapshot", None)
-    if cat is None:
-        return True
-    return str(cat) in ("focus", "集中")  
-
-
-
-def _build_daily_report_text(timer_runs: list[TimerRun]) -> str:
+def _build_daily_report_text(timer_runs: list[TimerRun], r: Range) -> str:
     if not timer_runs:
         return "本日の実施記録がありません。"
 
-    tz = timezone.get_current_timezone()
-    min_dt = timezone.make_aware(datetime.min, tz)
-
-    # 開始時刻→id順
-    timer_runs = sorted(
-        timer_runs,
-        key=lambda tr: ((tr.started_at or min_dt), tr.id),
-    )
-
     lines: list[str] = []
+    lines.append("")
+
+    # started_at → id順
+    timer_runs = sorted(timer_runs, key=lambda tr: ((tr.started_at or r.start), tr.id))
+
     for tr in timer_runs:
         start = _to_hhmm(getattr(tr, "started_at", None))
         end_dt = getattr(tr, "ended_at", None) or getattr(tr, "updated_at", None)
@@ -80,7 +72,7 @@ def _build_daily_report_text(timer_runs: list[TimerRun]) -> str:
         elapsed = int(getattr(tr, "elapsed_sec", 0) or 0)
         memo = (getattr(tr, "memo", "") or "").strip()
 
-        lines.append(f"{start} ~ {end}（{_format_duration_min(elapsed)}） {name}")
+        lines.append(f"・{start} ~ {end}（{_format_duration_min(elapsed)}） {name}")
         if memo:
             lines.append(f"  - {memo}")
 
@@ -88,28 +80,37 @@ def _build_daily_report_text(timer_runs: list[TimerRun]) -> str:
 
 
 class DailyReportsView(LoginRequiredMixin, View):
-    template_name = "runs/daily-reports.html"  
+    template_name = "runs/daily-reports.html"
     login_url = "users:login"
 
     def get(self, request):
         now_local = timezone.localtime(timezone.now())
         r = _calc_daily_range_3am(now_local)
 
+        #1) カテゴリは集中のみ
+        #2) statusは「確定した記録」のみ（未開始/途中は出さない）
         qs = (
             TimerRun.objects.select_related("program_run")
             .filter(program_run__user=request.user)
             .filter(started_at__isnull=False)
             .filter(started_at__gte=r.start, started_at__lt=r.end)
+            .filter(category_snapshot=TimerRun.Category.FOCUS)
+            .filter(status__in=[
+                TimerRun.Status.FINISHED,
+                TimerRun.Status.SKIPPED,
+                TimerRun.Status.INTERRUPTED,
+            ])
+            .order_by("started_at", "id")
         )
+
         timer_runs = list(qs)
 
-        # 集中時間（秒）
-        focus_sec = sum(int(tr.elapsed_sec or 0) for tr in timer_runs if _is_focus(tr))
-        total_hours = focus_sec // 3600
-        total_minutes = (focus_sec % 3600) // 60
+        total_sec = sum(int(tr.elapsed_sec or 0) for tr in timer_runs)
+        total_hours = total_sec // 3600
+        total_minutes = (total_sec % 3600) // 60
 
         return render(request, self.template_name, {
             "total_hours": total_hours,
             "total_minutes": total_minutes,
-            "daily_report_text": _build_daily_report_text(timer_runs),
+            "daily_report_text": _build_daily_report_text(timer_runs, r),
         })
