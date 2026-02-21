@@ -19,17 +19,22 @@ class ProgramRunsView(LoginRequiredMixin, View):
         return render(request, 'runs/program-runs.html', context={'dict_programs': dict_programs})
 
     def post(self, request, *args, **kwargs):
-        body = json.loads(request.body)
-        program_id = body.get('program_id')
-        user = request.user
+        if not request.body:
+            return JsonResponse({'error': 'リクエストボディが空です'}, status=400)
+        try:
+            body = json.loads(request.body)
+            program_id = body.get('program_id')
+            user = request.user
 
-        if not ProgramRun.objects.filter(program_id=program_id, user=user).exists():
-            program = Program.objects.filter(id=program_id, user=user).first()
-            if program is None:
-                return JsonResponse({'error': 'invalid program'}, status=400)
-            create_runs_draft(user=user, program=program)
+            if not ProgramRun.objects.filter(program_id=program_id, user=user).exists():
+                program = Program.objects.filter(id=program_id, user=user).first()
+                if program is None:
+                    return JsonResponse({'error': 'invalid program'}, status=400)
+                create_runs_draft(user=user, program=program)
 
-        id_dict = ProgramRun.objects.filter(program_id=program_id).values('id').first()
-        program_run_id = id_dict.get('id')
-        url = reverse('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
-        return JsonResponse({'redirect_url': url})
+            id_dict = ProgramRun.objects.filter(program_id=program_id).values('id').first()
+            program_run_id = id_dict.get('id')
+            url = reverse('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
+            return JsonResponse({'redirect_url': url})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

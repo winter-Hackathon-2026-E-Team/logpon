@@ -20,8 +20,48 @@ def selector_exist_runs(program_run_id):
         'order_index_snapshot',
         'timer_name_snapshot',
         'duration_sec_snapshot',
+        'sound_file_snapshot',
         'category_snapshot',
         'status',
         'elapsed_sec',
+        'memo',
         )
     return (program_run, timer_runs)
+
+# start
+def selector_start_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+        'started_at',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'started_at',
+    ).first()
+    return (program_run, timer_run)
+
+# pause
+def selector_pause_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    return (program_run, timer_run)
+
+# resume
+def selector_resume_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    return (program_run, timer_run)
