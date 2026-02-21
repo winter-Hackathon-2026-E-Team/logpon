@@ -16,7 +16,7 @@
         <h2>実施記録確認</h2>
         <div class="records-date-select">
             <p>年月日：</p>
-            <input type="date">
+            <input id="recordsDate" type="date">
         </div>
     </div>
     
@@ -28,21 +28,21 @@
             <section id="recordedProgramList">
                 <!-- 実行したプログラムはバックエンドから取得する -->
                 <!-- program-runsのタイマーのクラスとcurrentOneで統一すれば、選んだプログラムのデザインが統一できる -->
-                <button class="recordedCard recordedProgram currentProgram" data-progrum-run-id="">
+                <button class="recordedCard recordedProgram currentProgram" data-program-run-id="">
                     <p>全て</p>
                     <div class="programInfo">
                         <p class="numberOfTimer">10件</p>
                         <p class="duration">5時間30分</p>
                     </div>                    
                 </button>
-                <button class="recordedCard recordedProgram" data-progrum-run-id="001">
+                <button class="recordedCard recordedProgram" data-program-run-id="001">
                     <p>プログラムA</p>
                     <div class="programInfo">
                         <p class="numberOfTimer">6件</p>
                         <p class="duration">4時間30分</p>
                     </div>                    
                 </button>
-                <button class="recordedCard recordedProgram" data-progrum-run-id="002">
+                <button class="recordedCard recordedProgram" data-program-run-id="002">
                     <p>プログラムB</p>
                     <div class="programInfo">
                         <p class="numberOfTimer">4件</p>
