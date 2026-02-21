@@ -95,3 +95,18 @@ def status_skip(program_run_id, finished_timer_run_id, elapsed_sec:int, next_tim
         program_run.ended_at = timezone.now()
         program_run.updated_at = timezone.now()
         program_run.save()
+
+@transaction.atomic
+def status_interrupt(program_run_id, timer_run_id, elapsed_sec:int):
+    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+    program_run.status = ProgramRun.Status.INTERRUPTED
+    program_run.paused_at = timezone.now()
+    program_run.updated_at = timezone.now()
+    program_run.save()
+
+    timer_run = TimerRun.objects.select_for_update().get(id=timer_run_id, program_run_id=program_run_id)
+    timer_run.status = TimerRun.Status.INTERRUPTED
+    timer_run.paused_at = timezone.now()
+    timer_run.elapsed_sec += elapsed_sec
+    timer_run.updated_at = timezone.now()
+    timer_run.save()

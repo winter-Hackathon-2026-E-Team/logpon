@@ -56,3 +56,10 @@ def serialize_skip_runs(program_run, skipped_timer, next_timer):
     data['skipped_timer'] = skipped_timer
     data['next_timer'] = next_timer
     return data
+
+# interrupt時の整形
+def serialize_interrupt_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['interrupted_timer'] = timer_run
+    return data

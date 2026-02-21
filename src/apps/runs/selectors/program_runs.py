@@ -119,3 +119,17 @@ def selector_skip_programRun_timerRun(program_run_id, finished_timer_run_id, nex
     else:
         next_timer = None
     return (program_run, skipped_timer, next_timer)
+
+# interrupt
+def selector_interrupt_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+        'paused_at',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'paused_at',
+    ).first()
+    return (program_run, timer_run)
