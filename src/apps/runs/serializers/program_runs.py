@@ -12,3 +12,24 @@ def serialize_exist_runs(program_run, timer_runs):
     data['program_run'] = program_run
     data['timer_runs'] = list(timer_runs)
     return data
+
+# start時の整形
+def serialize_start_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['current_timer'] = timer_run
+    return data
+
+# pause時の整形
+def serialize_pause_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['paused_timer'] = timer_run
+    return data
+
+# resume時の整形
+def serialize_resume_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['paused_timer'] = timer_run
+    return data
