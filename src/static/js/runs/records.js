@@ -85,7 +85,7 @@ async function fetchByDate(dateYmd) {
 async function saveMemo(timerRunId, memo) {
   const csrftoken = getCookie("csrftoken");
 
-  const res = await fetch(`/timer-runs/${timerRunId}/memo`, {
+  const res = await fetch(`/timer-runs/${timerRunId}/memo/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

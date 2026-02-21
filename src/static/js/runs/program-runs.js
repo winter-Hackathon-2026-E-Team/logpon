@@ -706,7 +706,7 @@ memoSendBtn.addEventListener("click", async() => {
   const memo = memoTextarea.value;
 
   try {
-    const res = await fetch(`timer-runs/${modalState.timerRunId}/memo`, {
+    const res = await fetch(`/timer-runs/${modalState.timerRunId}/memo/`, {
       method: "POST",
       headers: {
         "Content-Type":"application/json",
