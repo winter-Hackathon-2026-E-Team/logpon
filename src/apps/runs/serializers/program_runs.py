@@ -41,3 +41,10 @@ def serialize_next_runs(program_run, finished_timer, next_timer):
     data['finished_timer'] = finished_timer
     data['next_timer'] = next_timer
     return data
+
+# progress時の整形
+def serialize_progress_runs(program_run, timer_run):
+    data = {}
+    data['program_run'] = program_run
+    data['current_timer'] = timer_run
+    return data
