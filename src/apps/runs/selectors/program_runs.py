@@ -67,14 +67,22 @@ def selector_resume_programRun_timerRun(program_run_id, timer_run_id):
     return (program_run, timer_run)
 
 # next
-def selector_next_programRun_timerRun(program_run_id, timer_run_id):
+def selector_next_programRun_timerRun(program_run_id, finished_timer_run_id, next_timer_run_id):
     program_run = ProgramRun.objects.filter(id=program_run_id).values(
         'id',
         'status',
     ).first()
-    finished_timer = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+    finished_timer = TimerRun.objects.filter(id=finished_timer_run_id, program_run_id=program_run_id).values(
         'id',
         'status',
         'ended_at',
-    )
-    return (program_run, finished_timer)
+    ).first()
+    if next_timer_run_id:
+        next_timer = TimerRun.objects.filter(id=next_timer_run_id, program_run_id=program_run_id).values(
+            'id',
+            'status',
+            'started_at'
+        ).first()
+    else:
+        next_timer = None
+    return (program_run, finished_timer, next_timer)

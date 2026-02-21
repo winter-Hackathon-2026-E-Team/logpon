@@ -14,10 +14,11 @@ class ProgramNextView(LoginRequiredMixin, View):
             return JsonResponse({'error': 'リクエストボディが空です'}, status=400)
         try:
             body = json.loads(request.body)
-            timer_run_id = body.get('timer_run_id')
+            finished_timer_run_id = body.get('finished_timer_run_id')
             elapsed_sec = int(body.get('elapsed_sec'))
-            next_timer = status_next(program_run_id, timer_run_id, elapsed_sec)
-            program_run, finished_timer = selector_next_programRun_timerRun(program_run_id, timer_run_id)
+            next_timer_run_id = body.get('next_timer_run_id')
+            status_next(program_run_id, finished_timer_run_id, elapsed_sec, next_timer_run_id)
+            program_run, finished_timer, next_timer = selector_next_programRun_timerRun(program_run_id, finished_timer_run_id, next_timer_run_id)
             runs_data = serialize_next_runs(program_run, finished_timer, next_timer)
             return JsonResponse({'runs_data': runs_data})
         except Exception as e:

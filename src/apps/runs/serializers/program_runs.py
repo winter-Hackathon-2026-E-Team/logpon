@@ -40,3 +40,4 @@ def serialize_next_runs(program_run, finished_timer, next_timer):
     data['program_run'] = program_run
     data['finished_timer'] = finished_timer
     data['next_timer'] = next_timer
+    return data
