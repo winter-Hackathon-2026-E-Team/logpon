@@ -48,3 +48,11 @@ def serialize_progress_runs(program_run, timer_run):
     data['program_run'] = program_run
     data['current_timer'] = timer_run
     return data
+
+# skip時の整形
+def serialize_skip_runs(program_run, skipped_timer, next_timer):
+    data = {}
+    data['program_run'] = program_run
+    data['skipped_timer'] = skipped_timer
+    data['next_timer'] = next_timer
+    return data

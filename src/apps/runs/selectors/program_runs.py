@@ -98,3 +98,24 @@ def selector_progress_programRun_timerRun(program_run_id, current_timer_run_id):
         'status',
     ).first()
     return (program_run, timer_run)
+
+# skip
+def selector_skip_programRun_timerRun(program_run_id, finished_timer_run_id, next_timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    skipped_timer = TimerRun.objects.filter(id=finished_timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'ended_at',
+    ).first()
+    if next_timer_run_id:
+        next_timer = TimerRun.objects.filter(id=next_timer_run_id, program_run_id=program_run_id).values(
+            'id',
+            'status',
+            'started_at'
+        ).first()
+    else:
+        next_timer = None
+    return (program_run, skipped_timer, next_timer)
