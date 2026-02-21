@@ -15,8 +15,7 @@ class ProgramResumeView(LoginRequiredMixin, View):
         try:
             body = json.loads(request.body)
             timer_run_id = body.get('timer_run_id')
-            elapsed_sec = int(body.get('elapsed_sec'))
-            status_resume(program_run_id, timer_run_id, elapsed_sec)
+            status_resume(program_run_id, timer_run_id)
             program_run, timer_run = selector_resume_programRun_timerRun(program_run_id, timer_run_id)
             runs_data = serialize_resume_runs(program_run, timer_run)
             return JsonResponse({'runs_data': runs_data})

@@ -24,6 +24,7 @@ def status_pause(program_run_id, timer_run_id, elapsed_sec:int):
     program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
     program_run.status = ProgramRun.Status.PAUSED
     program_run.paused_at = timezone.now()
+    program_run.total_elapsed_sec += elapsed_sec
     program_run.updated_at = timezone.now()
     program_run.save()
 
@@ -36,7 +37,7 @@ def status_pause(program_run_id, timer_run_id, elapsed_sec:int):
 
 # プログラムresume（再開）
 @transaction.atomic
-def status_resume(program_run_id, timer_run_id, elapsed_sec:int):
+def status_resume(program_run_id, timer_run_id):
     program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
     program_run.status = ProgramRun.Status.RUNNING
     program_run.updated_at = timezone.now()
@@ -44,13 +45,17 @@ def status_resume(program_run_id, timer_run_id, elapsed_sec:int):
 
     timer_run = TimerRun.objects.select_for_update().get(id=timer_run_id, program_run_id=program_run_id)
     timer_run.status = TimerRun.Status.RUNNING
-    timer_run.elapsed_sec += elapsed_sec
     timer_run.updated_at = timezone.now()
     timer_run.save()
 
 # プログラムnext（自動遷移）
 @transaction.atomic
 def status_next(program_run_id, finished_timer_run_id, elapsed_sec:int, next_timer_run_id):
+    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+    program_run.total_elapsed_sec += elapsed_sec
+    program_run.updated_at = timezone.now()
+    program_run.save()
+
     timer_run = TimerRun.objects.select_for_update().get(id=finished_timer_run_id, program_run_id=program_run_id)
     timer_run.status = TimerRun.Status.FINISHED
     timer_run.ended_at = timezone.now()
@@ -75,6 +80,11 @@ def status_next(program_run_id, finished_timer_run_id, elapsed_sec:int, next_tim
 # プログラムskip（スキップ）
 @transaction.atomic
 def status_skip(program_run_id, finished_timer_run_id, elapsed_sec:int, next_timer_run_id):
+    program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
+    program_run.total_elapsed_sec += elapsed_sec
+    program_run.updated_at = timezone.now()
+    program_run.save()
+
     timer_run = TimerRun.objects.select_for_update().get(id=finished_timer_run_id, program_run_id=program_run_id)
     timer_run.status = TimerRun.Status.SKIPPED
     timer_run.ended_at = timezone.now()
@@ -96,11 +106,13 @@ def status_skip(program_run_id, finished_timer_run_id, elapsed_sec:int, next_tim
         program_run.updated_at = timezone.now()
         program_run.save()
 
+# プログラムinterrupt（中断）
 @transaction.atomic
 def status_interrupt(program_run_id, timer_run_id, elapsed_sec:int):
     program_run = ProgramRun.objects.select_for_update().get(id=program_run_id)
     program_run.status = ProgramRun.Status.INTERRUPTED
     program_run.paused_at = timezone.now()
+    program_run.total_elapsed_sec += elapsed_sec
     program_run.updated_at = timezone.now()
     program_run.save()
 

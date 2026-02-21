@@ -15,8 +15,7 @@ class ProgramProgressView(LoginRequiredMixin, View):
         try:
             body = json.loads(request.body)
             current_timer_run_id = body.get('current_timer_run_id')
-            elapsed_sec = int(body.get('elapsed_sec'))
-            runs_progress(program_run_id, current_timer_run_id, elapsed_sec)
+            runs_progress(program_run_id, current_timer_run_id)
             program_run, timer_run = selector_progress_programRun_timerRun(program_run_id, current_timer_run_id)
             runs_data = serialize_progress_runs(program_run, timer_run)
             return JsonResponse({'runs_data': runs_data})
