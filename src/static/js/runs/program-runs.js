@@ -45,6 +45,7 @@ const timerList = document.getElementById("executeTimerList");
 // タイマー部分の表示に関するDOM
 const currentTimerNameEl = document.getElementById("currentTimerName");
 const remainingTimeEl = document.getElementById("remainingTime");
+const timerFaceEl = document.querySelector(".timerFace");
 
 // スタートボタンに関するDOM
 const startBtn = document.getElementById("startBtn");
@@ -203,6 +204,25 @@ function formatMMSS(sec) {
   return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
 }
 
+// タイマーの円を減らすアニメーションを作る関数
+function updateTimerCircle() {
+  const tr = getCurrentTimerRun();
+  if (!tr || state.remainingSec == null) return;
+
+  const total = tr.duration_sec_snapshot || 0;
+  if (total <= 0) {
+    timerFaceEl.style.setProperty("--deg", "0deg");
+    return;
+  }
+
+  const remainingRatio = 1 - (state.remainingSec / total);
+
+  const deg = remainingRatio * 360;
+
+  timerFaceEl.style.setProperty("--deg", `${deg}deg`);
+}
+
+
 // タイマー一覧をレンダリングする関数
 function renderTimerList() {
   timerList.innerHTML = "";
@@ -292,6 +312,7 @@ function tick() {
   state.remainingSec = Math.max(0, tr.duration_sec_snapshot - tr.elapsed_sec);
   // remainingSecを元に表示を変える
   renderCurrentTimerFace();
+  updateTimerCircle();
   // 定期送信
   sendProgressIfNeeded(false);
   // タイマーが0以下になったら次へ
