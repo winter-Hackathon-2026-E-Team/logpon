@@ -104,7 +104,7 @@ class DailyReportsView(LoginRequiredMixin, View):
     def get(self, request):
         now_local = timezone.localtime(timezone.now())
         r = _calc_daily_range_3am(now_local)
-
+        MIN_REPORT_SEC = 120  # 2分未満は日報に載せない
         qs = (
             TimerRun.objects.select_related("program_run")
             .filter(program_run__user=request.user)
@@ -112,7 +112,7 @@ class DailyReportsView(LoginRequiredMixin, View):
             .filter(started_at__gte=r.start, started_at__lt=r.end)
 
             .filter(category_snapshot=TimerRun.Category.FOCUS)
-
+            .filter(elapsed_sec__gte=MIN_REPORT_SEC) 
             #pending（初期状態）だけ除外 → running/paused/finished/skipped/interrupted は出す
             .exclude(status=TimerRun.Status.PENDING)
 
@@ -125,6 +125,8 @@ class DailyReportsView(LoginRequiredMixin, View):
         total_sec = sum(int(tr.elapsed_sec or 0) for tr in timer_runs)
         total_hours = total_sec // 3600
         total_minutes = (total_sec % 3600) // 60
+
+        
 
         return render(request, self.template_name, {
             "total_hours": total_hours,
