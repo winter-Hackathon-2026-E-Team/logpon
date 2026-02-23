@@ -35,10 +35,12 @@
             data-post-url="{% url 'runs:program-runs' %}"
             data-csrf="{{ csrf_token }}"
             data-start-url-template="/program-runs/__ID__/start/"
+            data-pause-url-template="/program-runs/__ID__/pause/"
             data-resume-url-template="/program-runs/__ID__/resume/"
             data-progress-url-template="/program-runs/__ID__/progress/"
             data-skip-url-template="/program-runs/__ID__/skip/"
             data-next-url-template="/program-runs/__ID__/next/"
+            data-interrupt-url-template="/program-runs/__ID__/interrupt/"
             hidden
             ></div>
 
