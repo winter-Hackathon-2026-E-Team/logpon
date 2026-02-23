@@ -45,11 +45,19 @@
             ></div>
 
             <section class="timer-execute">
-                <button id="startBtn" type="button">
-                    <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
-                    <iconify-icon icon="uil:play" id="startIcon" class=""></iconify-icon>
-                    <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
-                </button>
+                <div class="control-area">
+                    <div class="center-control">
+                        <button id="startBtn" type="button">
+                            <!-- iconはボタンを押すごとにplay, pauseを入れ替える -->
+                            <iconify-icon icon="uil:play" id="startIcon" class=""></iconify-icon>
+                            <iconify-icon icon="uil:pause" id="pauseIcon" class="hidden"></iconify-icon>
+                        </button>
+                        <button id="skipBtn" type="button" class="skip-btn">
+                            <iconify-icon icon="uil:skip-forward" id="skipIcon"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="timerFace">
                     <p id="currentTimerName"></p>
                     <p id="remainingTime"></p>
@@ -62,24 +70,7 @@
             
             <section id="executeTimerList">
                 <!-- タイマーはバックエンドから取得したデータで作成する -->
-                <!-- <button class="oneTimer finishedOneTimer" data-timer-run-id="001"
-                 data-category="集中">
-                    <p class="category">集中</p>
-                    <p class="timerName">Python</p>
-                    <p class="duration">25分</p>
-                </button>
-                <button class="oneTimer currentOneTimer" data-timer-run-id="002"
-                 data-category="休憩">
-                    <p class="category">休憩</p>
-                    <p class="timerName">お茶</p>
-                    <p class="duration">5分</p>
-                </button>
-                <button class="oneTimer" data-timer-run-id="003"
-                 data-category="集中">
-                    <p class="category">集中</p>
-                    <p class="timerName">Python</p>
-                    <p class="duration">25分</p>
-                </button> -->
+
             </section>
 
         </div>

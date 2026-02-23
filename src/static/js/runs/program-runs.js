@@ -58,6 +58,7 @@ const timerFaceEl = document.querySelector(".timerFace");
 const startBtn = document.getElementById("startBtn");
 const startIcon = document.getElementById("startIcon");
 const pauseIcon = document.getElementById("pauseIcon");
+const skipbtn = document.getElementById("skipBtn");
 
 // プログラムメニューの選択に関するDOM
 const programSelect = document.getElementById("programId");
@@ -500,6 +501,10 @@ async function finishCurrentAndMoveNext() {
 
     if (!next) {
       stopCompletely();
+      // スキップ後に再開できないようにstateの値を削除
+      state.currentTimerRunId = null;
+      state.remainingSec = null;
+
       renderTimerList();
       renderCurrentTimerFace();
       syncPlayIcon();
@@ -542,6 +547,10 @@ async function skipCurrentTimer() {
 
     if (!next) {
       stopCompletely();
+      // スキップ後に再開できないようにstateの値を削除
+      state.currentTimerRunId = null;
+      state.remainingSec = null;
+
       renderTimerList();
       renderCurrentTimerFace();
       syncPlayIcon();
@@ -894,4 +903,9 @@ startBtn.addEventListener("click", () => {
   // 一時停止と再生を切り替え
   if(state.isRunning) pauseTimer();
   else startTimer();
+});
+
+// スキップボタンを押した時のイベント
+skipBtn.addEventListener("click", () => {
+  skipCurrentTimer();
 });
