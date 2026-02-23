@@ -1,13 +1,30 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>profile</title>
-</head>
-<body>
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block content %}
     <h1>profile</h1>
     <p>現在のemail：{{ email }}</p>
     <p>現在のusername：{{ username }}</p>
-</body>
-</html>
+    <form action="{% url 'users:profile-email' user.id %}" method="post">
+        {% csrf_token %}
+        <label for="email">メールアドレス：</label>
+        <input type="email" name="email" value="{{ email }}">
+        <button type="submit">変更</button>
+    </form>
+    <form action="{% url 'users:profile-username' %}" method="post">
+        {% csrf_token %}
+        <label for="username">ユーザー名：</label>
+        <input type="text" name="username" value="{{ username }}">
+        <button type="submit">変更</button>
+    </form>
+    <form action="{% url 'users:profile-password' %}" method="post">
+        {% csrf_token %}
+        <label for="password">パスワード：</label>
+        <input type="password" name="password" value="">
+        <label for="password1">新しいパスワード</label>
+        <input type="password" name="password1" value="">
+        <label for="password2">新しいパスワード（確認用）</label>
+        <input type="password" name="password2" value="">
+        <button type="submit">変更</button>
+    </form>
+{% endblock %}
