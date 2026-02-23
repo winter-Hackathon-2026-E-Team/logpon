@@ -7,17 +7,19 @@
     <p>現在のusername：{{ username }}</p>
     <form action="{% url 'users:profile-email' user.id %}" method="post">
         {% csrf_token %}
+        {{ form.as_p }}
+        {{ form.email.errors }} 
         <label for="email">メールアドレス：</label>
         <input type="email" name="email" value="{{ email }}">
         <button type="submit">変更</button>
     </form>
-    <form action="{% url 'users:profile-username' %}" method="post">
+    <form action="{% url 'users:profile-username' user.id %}" method="post">
         {% csrf_token %}
         <label for="username">ユーザー名：</label>
         <input type="text" name="username" value="{{ username }}">
         <button type="submit">変更</button>
     </form>
-    <form action="{% url 'users:profile-password' %}" method="post">
+    <form action="{% url 'users:profile-password' user.id %}" method="post">
         {% csrf_token %}
         <label for="password">パスワード：</label>
         <input type="password" name="password" value="">

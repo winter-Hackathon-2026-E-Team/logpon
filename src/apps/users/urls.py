@@ -30,6 +30,6 @@ urlpatterns = [
         ),
     path('profile/', profile.ProfileView.as_view(), name='profile'),
     path('profile/<int:pk>/email/', profile_email.ProfileEmailView.as_view(), name='profile-email'),
-    path('profile/username/', profile_username.ProfileUsernameView.as_view(), name='profile-username'),
-    path('profile/password/', profile_password.ProfilePasswordView.as_view(), name='profile-password'),
+    path('profile/<int:pk>/username/', profile_username.ProfileUsernameView.as_view(), name='profile-username'),
+    path('profile/<int:pk>/password/', profile_password.ProfilePasswordView.as_view(), name='profile-password'),
 ]

@@ -1,5 +1,6 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.views.generic.edit import UpdateView
@@ -14,5 +15,5 @@ class ProfileEmailView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'emailの変更が完了しました'
 
     def form_invalid(self, form):
+        messages.error(self.request, 'このメールアドレスは既に登録されています')
         return redirect('users:profile')
-
