@@ -62,6 +62,44 @@
     margin-left: 5px;
 }
 
+.control-area {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.center-control {
+    position: relative;
+}
+
+.skip-btn {
+    width: 44px;
+    height: 44px;
+    border: solid 2px var(--color-header-current-text);
+    background: none;
+    border-radius: 50%;
+    position: absolute;
+    right: -75px;
+    top: 25%;
+    transform: translateY(-50%);
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.skip-btn:hover {
+    background: var(--color-accent);
+    border: none;
+}
+
+#skipIcon {
+    font-size: 30px;
+    color: var(--color-header-current-text);
+    margin-top: 2px;
+}
+
+.skip-btn:hover #skipIcon {
+    color: var(--color-bg);
+}
+
 .timerFace {
     display: flex;
     flex-direction: column;
