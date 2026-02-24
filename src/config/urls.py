@@ -17,11 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# ヘルスチェック
+from apps.core.views import health_check
+
 urlpatterns = [
+    path('health/', health_check),
     path('admin/', admin.site.urls),
     path('', include('apps.users.urls')),
     path('', include('apps.runs.urls')),
-    path("timers/", include("apps.timers.urls")),
-    path("programs/", include("apps.programs.urls")),
-    path("program_timers/", include("apps.programs.program_timers_urls")),
+    path('timers/', include('apps.timers.urls')),
+    path('programs/', include('apps.programs.urls')),
+    path('program_timers/', include('apps.programs.program_timers_urls')),
 ]

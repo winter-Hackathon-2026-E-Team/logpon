@@ -8,13 +8,15 @@
 - MySQL 8.4 # AWS RDS MySQLのLTS(8.4)と整合
 - Bootstrap5 26.1 # Djangoと互換性のある最新版
 
-## ディレクトリ・ファイル構成
+## ディレクトリ・ファイル構成(本番用)
 本プロジェクトのディレクトリ・ファイル構成を以下のとおり示す。
 ```
 └── プロジェクト名
     ├── src                                   # ソースディレクトリ
     │   ├── apps                              # バックエンドディレクトリ
-    │   │   ├── (core)                        # 任意(共通動作ディレクトリ)
+    │   │   ├── core                          # 共通動作ディレクトリ
+    │   │   │    ├── __init__.py              # パッケージ化のための空ファイル
+    │   │   │    └── views.py                 # ページ設定用ファイル
     │   │   └── (your_app)                    # 任意
     │   ├── templates                         # テンプレートディレクトリ
     │   │   └── (your_html)                   # 任意
@@ -30,6 +32,9 @@
     │   │   ├── urls.py                       # プロジェクト全体のURL設定
     │   │   ├── asgi.py                       # 非同期通信のための設定ファイル
     │   │   ├── wsgi.py                       # 同期通信のための設定ファイル
+    │   │   ├── middleware                    # ミドルウエア設定ディレクトリ
+    │   │   │   ├── __init__.py               # パッケージ化のための空ファイル）
+    │   │   │   └── health_check.py           # ヘルスチェック用設定ファイル
     │   │   └── settings                      # 環境設定ディレクトリ
     │   │       ├── __init__.py               # パッケージ化のための空ファイル
     │   │       ├── base.py                   # 全環境共通の設定
@@ -38,11 +43,11 @@
     │   └── manage.py                         # Django管理ファイル
     ├── docker                                # Dockerディレクトリ
     │   ├── Dockerfile                        # Python(Django)のDockerイメージ
-    │   └── wait-for-it.sh                    # DB起動後にDjangoを開始するためのシェルスクリプト
-    ├── infra                               　# インフラディレクトリ
+    │   ├── wait-for-it.sh                    # DB起動後にDjangoを開始するためのシェルスクリプト
     │   └── nginx                             # nginx用ディレクトリ
-    │   　      ├── Dockerfile                # nginxのDockerイメージ
-    │   　      └── nginx.conf                # nginxのconfファイル
+    │   　      ├── nginx.conf                # nginxのconfファイル
+    │   　      └── conf.d/                　 # デフォルトnginx用ディレクトリ
+    │   　      　　　└─ default.conf         # デフォルトnginxのconfファイル
     ├── .dockerignore                         # Dockerビルド時の無視ファイルの設定
     ├── .gitignore                            # GitHubにpushしないファイルの設定
     ├── docker-compose.yml                    # Python(django)とDBの構成ファイル

@@ -1,78 +1,130 @@
-# db(django_MySQL), web(django)のコンテナを作成
-services:
-  # MySQLの設定
-  db:
-    # コンテナ名をMySQLに設定
-    container_name: django_MySQL
-    # バージョンはAWS RDS MySQLのLTS(8.4)と整合
-    image: mysql:8.4
-    # ポート番号の設定
-    ports:
-      - "3306:3306"
-    # 文字コード、照合順序の設定
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
-    # ボリュームマウントの設定
-    volumes:
-      - db_data:/var/lib/mysql
-    # 環境変数の設定
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - TZ=${TZ}
-    # .envファイルから環境変数を読み込む
-    env_file:
-      - .env
-    # コンテナが正常に動作しているか監視するためのhealthcheckの設定
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD} --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+# ======================================================================
+# 本番環境（EC2 + RDS）用 Docker Compose設定
+# ======================================================================
+# 開発環境との主な違い:
+# - dbサービスは含まれません（AWS RDSを使用）
+# - runserverではなくGunicornを使用
+# - Nginxコンテナを追加
+# - wait-for-itは使用しない（RDSは常時起動のため）
+# ======================================================================
 
-  # Djangoの設定
+version: '3.8'
+
+services:
+  # ======================================
+  # Django + Gunicorn
+  # ======================================
   web:
-    # コンテナ名をdjangoに設定
-    container_name: django
-    # Python(django)のDockerfileをビルド
-    # ビルドコンテキストは「カレントディレクトリ」とする
+    container_name: logpon-web
+    
+    # Dockerfileのビルド設定
     build:
       context: .
       dockerfile: docker/Dockerfile
-      # ビルド時のDockerfileの変数設定
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
         USERNAME: ${USERNAME:-appuser}
         GROUPNAME: ${GROUPNAME:-appgroup}
-    # dockerコンテナ起動時のデフォルトコマンド設定
-    command: wait-for-it.sh db:3306 -- sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    # バインドマウントの設定(ローカルのsrcとコンテナ内のsrcを同期)
+   
+    user: root  # 一時的にrootで実行
+
+    # 本番環境用コマンド: Gunicorn
+    # 開発環境: python manage.py runserver
+    # 本番環境: gunicorn
+    command: >
+      sh -c "
+      mkdir -p /src/staticfiles /src/mediafiles &&
+      chown -R appuser:appgroup /src &&
+      su appuser -c 'python manage.py migrate' && 
+      su appuser -c 'python manage.py collectstatic --noinput' &&
+      exec su appuser -c 'exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60 --access-logfile - --error-logfile - --log-level info'
+      "
+    
+    # ボリュームマウント
     volumes:
       - ./src:/src
-    # ポート番号の設定
-    ports:
-      - "${DJANGO_PORT}:8000"
-    # 環境変数の設定
+      - static_volume:/src/staticfiles
+      - media_volume:/src/mediafiles
+      - logs_volume:/var/log/gunicorn
+    
+    # ポート番号（Nginxからのみアクセス）
+    expose:
+      - "8000"
+    
+    # 環境変数
     environment:
       - TZ=${TZ}
-    # dbサービスがhealthyになるまで待機
-    depends_on:
-      db:
-        condition: service_healthy
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+    
     # .envファイルから環境変数を読み込む
     env_file:
       - .env
-  
-  # MailHog(ローカル環境用のSMTPサーバー)の設定
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - '8025:8025' # ブラウザ上で確認するためのポート番号
-      - '1025:1025' # MailHogのデフォルトSMTPポート番号
+    
+    # 再起動ポリシー（本番環境用：常に再起動）
+    restart: always
+    
+    # ヘルスチェック（本番環境用）
+    #healthcheck:
+     # test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+     # interval: 30s
+     # timeout: 10s
+     # retries: 3
+     # start_period: 40s
 
-# DBデータ永続化用の名前付きボリューム
+  # ======================================
+  # Nginx（リバースプロキシ + 静的ファイル配信）
+  # ======================================
+  nginx:
+    container_name: logpon-nginx
+    image: nginx:1.27-alpine
+    
+    # Nginx設定ファイルのマウント
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - static_volume:/src/staticfiles:ro
+      - media_volume:/src/mediafiles:ro
+    
+    # ポート番号（ALBからアクセス）
+    ports:
+      - "80:80"
+    
+    # webサービスに依存（ヘルスチェックが成功するまで待機）
+    depends_on:
+      - web    
+    
+    # 再起動ポリシー
+    restart: always
+    
+    # ヘルスチェック
+   # healthcheck:
+     # test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health/ || exit 1"]
+      #interval: 30s
+      #timeout: 10s
+      #retries: 3
+      #start_period: 20s
+
+# ======================================
+# 名前付きボリューム
+# ======================================
 volumes:
-  db_data:
+  # 静的ファイル用ボリューム
+  static_volume:
+    driver: local
+  
+  # メディアファイル用ボリューム
+  media_volume:
+    driver: local
+  
+  # ログ用ボリューム
+  logs_volume:
+    driver: local
+
+# ======================================
+# 注意事項
+# ======================================
+# - dbサービスは含まれていません（AWS RDSを使用）
+# - .envファイルのMYSQL_HOSTにRDSエンドポイントを設定してください
+# - DJANGO_SETTINGS_MODULE=config.settings.prod に設定してください
+# - 初回起動時は自動的にmigrateとcollectstaticが実行されます
