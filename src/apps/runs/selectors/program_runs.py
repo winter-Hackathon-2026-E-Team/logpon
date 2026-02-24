@@ -65,3 +65,71 @@ def selector_resume_programRun_timerRun(program_run_id, timer_run_id):
         'status',
     ).first()
     return (program_run, timer_run)
+
+# next
+def selector_next_programRun_timerRun(program_run_id, finished_timer_run_id, next_timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    finished_timer = TimerRun.objects.filter(id=finished_timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'ended_at',
+    ).first()
+    if next_timer_run_id:
+        next_timer = TimerRun.objects.filter(id=next_timer_run_id, program_run_id=program_run_id).values(
+            'id',
+            'status',
+            'started_at'
+        ).first()
+    else:
+        next_timer = None
+    return (program_run, finished_timer, next_timer)
+
+# progress
+def selector_progress_programRun_timerRun(program_run_id, current_timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=current_timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    return (program_run, timer_run)
+
+# skip
+def selector_skip_programRun_timerRun(program_run_id, finished_timer_run_id, next_timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+    ).first()
+    skipped_timer = TimerRun.objects.filter(id=finished_timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'ended_at',
+    ).first()
+    if next_timer_run_id:
+        next_timer = TimerRun.objects.filter(id=next_timer_run_id, program_run_id=program_run_id).values(
+            'id',
+            'status',
+            'started_at'
+        ).first()
+    else:
+        next_timer = None
+    return (program_run, skipped_timer, next_timer)
+
+# interrupt
+def selector_interrupt_programRun_timerRun(program_run_id, timer_run_id):
+    program_run = ProgramRun.objects.filter(id=program_run_id).values(
+        'id',
+        'status',
+        'paused_at',
+    ).first()
+    timer_run = TimerRun.objects.filter(id=timer_run_id, program_run_id=program_run_id).values(
+        'id',
+        'status',
+        'paused_at',
+    ).first()
+    return (program_run, timer_run)

@@ -20,26 +20,39 @@ if (window.__DJANGO_MESSAGES__?.length) {
 document.querySelectorAll(".edit-row").forEach((row) => {
     const view = row.querySelector("[data-view]");
     const form = row.querySelector("[data-editForm]");
-    const badge = row.querySelector("[data-badge");
-    const editBtn = row.querySelector("[data-edit");
-    const cancelBtn = row.querySelector("data-cancel");
-    const input = row.querySelector("[data-input");
+    const badge = row.querySelector("[data-badge]");
+    const editBtn = row.querySelector("[data-edit]");
+    const cancelBtn = row.querySelector("[data-cancel]");
+    const input = row.querySelector("[data-input]");
 
     if (!view || !form || !editBtn || !cancelBtn || !input) return;
 
     const initialValue = input.value;
 
     editBtn.addEventListener("click", () => {
+        document.querySelectorAll(".edit-row").forEach((otherRow) => {
+            if (otherRow === row) return;
+
+            const otherView = otherRow.querySelector("[data-view]");
+            const otherForm = otherRow.querySelector("[data-editForm]");
+            const otherBadge = otherRow.querySelector("[data-badge]");
+
+            otherForm?.classList.add("is-hidden");
+            otherView?.classList.remove("is-hidden");
+            otherBadge?.classList.add("is-hidden");
+        });
+
         view.classList.add("is-hidden");
         form.classList.remove("is-hidden");
         badge?.classList.remove("is-hidden");
+        input.focus();
     });
 
     cancelBtn.addEventListener("click", () => {
         input.value = initialValue;
         form.classList.add("is-hidden");
         view.classList.remove("is-hidden");
-        badge?.classList.add("is-hiddenn");
+        badge?.classList.add("is-hidden");
     });
 });
 
