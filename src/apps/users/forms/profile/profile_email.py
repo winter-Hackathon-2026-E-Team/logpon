@@ -8,7 +8,6 @@ class ProfileEmailForm(ModelForm):
         fields = ['email']
 
     def clean_email(self):
-        print('emailバリデーション')
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('このメールアドレスは既に登録されています')
