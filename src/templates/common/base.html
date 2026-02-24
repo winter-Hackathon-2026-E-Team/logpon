@@ -36,9 +36,9 @@
                         {% if user.is_authenticated %}
                         <div class="username">
                             <!-- ユーザーネームを後で変数に変える -->
-                            <p>ユーザーネームさん</p>
+                            <p>{{ request.user.username }}さん</p>
                             <!-- aタグに後でhrefを入れる（settingsページを新しく作る） -->
-                            <a>
+                            <a href="{% url 'users:profile' %}">
                                 <iconify-icon icon="uil:setting" id="setting"></iconify-icon>
                             </a>
                         </div>
