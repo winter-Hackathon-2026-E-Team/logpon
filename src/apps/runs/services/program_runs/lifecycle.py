@@ -98,9 +98,12 @@ def status_skip(program_run_id, finished_timer_run_id, elapsed_sec:int, next_tim
     timer_run.save()
 
     if next_timer_run_id:
-        program_run.status = ProgramRun.Status.RUNNING
         next_timer = TimerRun.objects.select_for_update().get(id=next_timer_run_id, program_run_id=program_run_id)
-        next_timer.status = TimerRun.Status.RUNNING
+        if program_run.status == ProgramRun.Status.RUNNING:
+            next_timer.status = TimerRun.Status.RUNNING
+        elif program_run.status == ProgramRun.Status.PAUSED:
+            next_timer.status = TimerRun.Status.PAUSED
+
         next_timer.started_at = now
         next_timer.updated_at = now
         next_timer.save()
