@@ -40,12 +40,17 @@ function escapeHtml(str) {
 }
 
 function formatHm(isoString) {
+  if (!isoString) return "";
   const d = new Date(isoString);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
+  if (Number.isNaN(d.getTime())) return "";
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function formatEnd(r) {
+  // finished だけ終了時刻、それ以外は日本語ラベル
+  if (r.status === "finished") return r.ended_at ? formatHm(r.ended_at) : "";
+  return r.status_label || "";
+}
 function formatDuration(sec) {
   const totalMin = Math.floor((sec ?? 0) / 60);
   const h = Math.floor(totalMin / 60);
@@ -166,7 +171,7 @@ function renderTimers() {
       class="recordedCard recordedTimer"
       data-timer-run-id="${r.timer_run_id}">
       <p class="startFinish">
-        <span>${formatHm(r.started_at)}</span> ~ <span>${formatHm(r.ended_at)}</span>
+        <span>${formatHm(r.started_at)}</span> ~ <span>${escapeHtml(formatEnd(r))}</span>
       </p>
       <p class="timerName">${escapeHtml(r.timer_name)}</p>
       <p class="elapsedSec">${formatDuration(r.elapsed_sec)}</p>

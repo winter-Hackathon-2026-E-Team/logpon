@@ -8,6 +8,7 @@ const state = {
   isRunning: false,
   intervalId: null,
   lastProgressSentElapsed: 0,
+  lastTickAtMs: null,
 }
 
 // メモモーダルの状態
@@ -27,6 +28,12 @@ let isAdvancing = false;
 
 // audioの自動再生のアンロックフラグ
 let audioUnlocked = false;
+
+// interrupttの二重送信防止フラグ
+let interruptSent = false;
+
+// プログラム選択のリロードでpagehideが発火しないためのフラグ
+let suppressInterruptOnce = false;
 
 // 2.DOM
 // モーダルに関するDOM
@@ -51,6 +58,7 @@ const timerFaceEl = document.querySelector(".timerFace");
 const startBtn = document.getElementById("startBtn");
 const startIcon = document.getElementById("startIcon");
 const pauseIcon = document.getElementById("pauseIcon");
+const skipbtn = document.getElementById("skipBtn");
 
 // プログラムメニューの選択に関するDOM
 const programSelect = document.getElementById("programId");
@@ -171,6 +179,9 @@ function initCurrentTimer () {
   state.currentTimerRunId = null;
   state.remainingSec = null;
   state.isRunning = false;
+
+  const tr = getCurrentTimerRun();
+  progressState.lastSentElapsedSec = tr ? tr.elapsed_sec - (tr.elapsed_sec % 60) : 0;
 }
 
 // ソート関数
@@ -180,7 +191,7 @@ function getSortedTimerRuns() {
   );
 }
 
-// stateのtimer_runsからcurrentTimerRunIdと廣鋳物を探す関数
+// stateのtimer_runsからcurrentTimerRunIdと同じものを探す関数
 function getCurrentTimerRun() {
   return state.timer_runs.find(tr => tr.id === state.currentTimerRunId) || null;
 }
@@ -286,6 +297,10 @@ async function startTimer() {
   // 状態を更新
   state.isRunning = true;
   tr.status = "running";
+
+  // tickの基準時刻をstateへ追加
+  state.lastTickAtMs = Date.now();
+
   syncPlayIcon();
   renderTimerList();
   renderCurrentTimerFace();
@@ -307,8 +322,19 @@ function tick() {
 
   const tr = getCurrentTimerRun();
   if (!tr) return;
+  // 現在時間を取得
+  const now = Date.now();
+  if(!state.lastTickAtMs) state.lastTickAtMs = now;
+
+  // 秒経過を基準時間との差で算出
+  const deltaSec = Math.floor((now - state.lastTickAtMs) / 1000);
+  if ( deltaSec <= 0) return;
+
+  // 秒経過の分だけ基準時間も進める（止まっていた時間もまとめて処理）
+  state.lastTickAtMs += deltaSec * 1000;
+
   // タイマーを進めてstateのremainingSecを減らす
-  tr.elapsed_sec += 1;
+  tr.elapsed_sec += deltaSec;
   state.remainingSec = Math.max(0, tr.duration_sec_snapshot - tr.elapsed_sec);
   // remainingSecを元に表示を変える
   renderCurrentTimerFace();
@@ -322,30 +348,44 @@ function tick() {
 }
 
 // タイマーを一時停止する時の処理を行う関数
-function pauseTimer() {
+async function pauseTimer() {
   if(!state.intervalId) return;
 
   clearInterval(state.intervalId);
   state.intervalId = null;
 
   state.isRunning = false;
+  // 基準時間を削除（次に残らないように）
+  state.lastTickAtMs = null
 
   const tr = getCurrentTimerRun();
-  if(tr) tr.status = "paused";
+  if(!tr) {
+    syncPlayIcon();
+    renderTimerList();
+    renderCurrentTimerFace();
+    return;
+  }
+
+  tr.status = "paused";
 
   syncPlayIcon();
   renderTimerList();
   renderCurrentTimerFace();
 
-  sendProgressIfNeeded(true);
+  await postPause(tr.id, tr.elapsed_sec)
+
+  progressState.lastSentElapsedSec = tr.elapsed_sec - (tr.elapsed_sec % 60);
+
 }
 
 // スタート時と再開時で報告先を変える関数
 const startUrlTemplate = config?.dataset.startUrlTemplate;
+const pauseUrlTemplate = config?.dataset.pauseUrlTemplate;
 const resumeUrlTemplate = config?.dataset.resumeUrlTemplate;
 const skipUrlTemplate = config?.dataset.skipUrlTemplate;
 const nextUrlTemplate = config?.dataset.nextUrlTemplate;
-const progressUrlTemplate = config?.dataset.progressUrlTemplate
+const progressUrlTemplate = config?.dataset.progressUrlTemplate;
+const interruptUrlTemplate = config?.dataset.interruptUrlTemplate;
 
 function buildUrl(tpl) {
   if(!tpl || !state.program_run_id) return null;
@@ -368,16 +408,44 @@ async function postStartOrResume(kind, timerRunId, elapsedSec) {
         "X-CSRFToken": csrf,
         "X-Requested-With": "XMLHttpRequest",
       },
+      credentials: "same-origin",
       body: JSON.stringify({
         timer_run_id: timerRunId,
         elapsed_sec: elapsedSec,
       }),
     });
-    if (!res.ok) throw new Error(`${kind} failed:{res.status}`);
+    if (!res.ok) throw new Error(`${kind} failed:${res.status}`);
   } catch (e) {
     console.error(e?.message || e);
   }
 }
+
+// 一時停止（pause）をサーバへ報告する関数
+async function postPause(timerRunId, elapsedSec) {
+  const url = buildUrl(pauseUrlTemplate);
+
+  if (!url) return;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf,
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        timer_run_id: timerRunId,
+        elapsed_sec: elapsedSec,
+      }),
+    });
+    if (!res.ok) throw new Error(`pause failed:${res.status}`);
+  } catch (e) {
+    console.error(e?.message || e);
+  }
+}
+
 
 // 次のタイマー（タイマー完了/Skip）をサーバへ報告する関数
 async function postSkipOrNext(kind,{finishedTimerRunId, elapsedSec, nextTimerRunId}) {
@@ -392,6 +460,7 @@ async function postSkipOrNext(kind,{finishedTimerRunId, elapsedSec, nextTimerRun
         "X-CSRFToken": csrf,
         "X-Requested-With": "XMLHttpRequest",
       },
+      credentials: "same-origin",
       body: JSON.stringify({
         finished_timer_run_id: finishedTimerRunId,
         elapsed_sec: elapsedSec,
@@ -432,6 +501,10 @@ async function finishCurrentAndMoveNext() {
 
     if (!next) {
       stopCompletely();
+      // スキップ後に再開できないようにstateの値を削除
+      state.currentTimerRunId = null;
+      state.remainingSec = null;
+
       renderTimerList();
       renderCurrentTimerFace();
       syncPlayIcon();
@@ -440,6 +513,8 @@ async function finishCurrentAndMoveNext() {
 
     state.currentTimerRunId = next.id,
     next.status = "running"
+    // スタートの基準時間を設定
+    state.lastTickAtMs = Date.now();
     state.remainingSec = Math.max(0, next.duration_sec_snapshot - next.elapsed_sec);
 
     renderTimerList();
@@ -472,6 +547,10 @@ async function skipCurrentTimer() {
 
     if (!next) {
       stopCompletely();
+      // スキップ後に再開できないようにstateの値を削除
+      state.currentTimerRunId = null;
+      state.remainingSec = null;
+
       renderTimerList();
       renderCurrentTimerFace();
       syncPlayIcon();
@@ -480,6 +559,8 @@ async function skipCurrentTimer() {
 
     state.currentTimerRunId = next.id;
     next.status = "running";
+    // 基準時間を設定
+    state.lastTickAtMs = Date.now();
     state.remainingSec = Math.max(0, next.duration_sec_snapshot - next.elapsed_sec);
 
     renderTimerList();
@@ -506,6 +587,8 @@ function stopCompletely() {
     state.intervalId = null;
   }
   state.isRunning = false;  
+  // 基準時間を削除（次に残らないように）
+  state.lastTickAtMs = null;
 }
 
 // progresをサーバへ送信する関数
@@ -522,6 +605,7 @@ async function postProgress({currentTimerRunId, elapsedSec}) {
         "X-CSRFToken": csrf,
         "X-Requested-With": "XMLHttpRequest",
       },
+      credentials: "same-origin",
       body: JSON.stringify({
         current_timer_run_id: currentTimerRunId,
         elapsed_sec: elapsedSec,
@@ -604,6 +688,80 @@ function playFinishSoundForTimerRun(tr) {
   });
 }
 
+// interrupt時のpayloadを作る関数
+function buildInterruptPayload() {
+  const tr = getCurrentTimerRun();
+  if(!tr) return null;
+
+  return {
+    timer_run_id: tr.id,
+    elapsed_sec: tr.elapsed_sec,
+  };
+}
+
+// sendBeaconとkeepalive fetchのベストエフォートでinterruptを送る関数
+function sendInterruptBestEffort(reason = "") {
+  if (suppressInterruptOnce) return;
+  if (interruptSent) return;
+
+  const url = buildUrl(interruptUrlTemplate);
+  if(!url) return;
+  
+  const payload = buildInterruptPayload();
+  if(!payload) return;
+  
+  interruptSent = true;
+
+  const body = JSON.stringify(payload);
+
+  // sendBeaconの処理
+  try {
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body],{ type: "application/json" });
+      const ok = navigator.sendBeacon(url, blob);
+      if (ok) return;
+    }
+  } catch {}
+
+  // keepalive fetch
+  try {
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf,
+        "X-Requestd-With": "XMLHttpRequest",
+      },
+      credentials: "same-origin",
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
+}
+
+// interruptのイベントを登録する関数
+function registerInterruptHandlers() {
+  // メイン(pagehide)
+  window.addEventListener("pagehide", (e) => {
+    sendInterruptBestEffort("pagehide");
+    },
+    { capture: true }
+  );
+
+  // 保険（beforeunload）
+  window.addEventListener("beforeunload", () => {
+    sendInterruptBestEffort("beforeunload");
+    },
+    { capture: true}
+  );
+
+  // bfcache復帰対策
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) {
+      interruptSent = false;
+    }
+  });
+}
 
 
 // 4.イベント
@@ -623,10 +781,13 @@ programSelect.addEventListener("change", async () => {
         "X-CSRFToken": csrf,
         "X-Requested-With": "XMLHttpRequest",
       },
+      credentials: "same-origin",
       body: JSON.stringify({ program_id: programId }),
     });
     const data = await res.json();
     const redirect = await data.redirect_url;
+    // pagehide発火のフラグをtrueにして発火しないようにする
+    suppressInterruptOnce = true;
 
     window.location.href = await redirect;
   } catch (error) {
@@ -670,6 +831,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error(error.message);
   }
+
+  registerInterruptHandlers();
 });
 
 // ×ボタンor背景クリックでモーダルを閉じる
@@ -713,6 +876,7 @@ memoSendBtn.addEventListener("click", async() => {
         "X-CSRFToken": csrf,
         "X-Requested-With": "XMLHttpRequest",
       },
+      credentials: "same-origin",
       body: JSON.stringify({memo}),
     });
 
@@ -739,4 +903,9 @@ startBtn.addEventListener("click", () => {
   // 一時停止と再生を切り替え
   if(state.isRunning) pauseTimer();
   else startTimer();
+});
+
+// スキップボタンを押した時のイベント
+skipBtn.addEventListener("click", () => {
+  skipCurrentTimer();
 });
