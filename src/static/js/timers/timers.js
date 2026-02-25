@@ -55,6 +55,12 @@ const createCategorySelect = createForm.querySelector('[name="create-category"]'
 // 作成フォームのサウンドの選択肢のDOM
 const createSoundSelect = createForm.querySelector('[name="create-sound"]');
 
+// タイマーが既存プログラム使用中を警告するDOM
+const usageWarningEdit = document.getElementById("usageWarningEdit");
+const usageTextEdit = document.getElementById("usageTextEdit");
+const usageWarningDelete = document.getElementById("usageWarningDelete");
+const usageTextDelete = document.getElementById("usageTextDelete");
+
 
 // 3.ユーティリティ関数
 // 変換関数
@@ -111,6 +117,8 @@ function applyEditFieldNames(timerId) {
 }
 
 
+
+
 // 4.描画系の関数
 // 片方のみ空の場合もメッセージを出す
 function ensureEmptyMessage(listEl) {
@@ -144,6 +152,9 @@ function setModalMode (mode, payload = null) {
     beforeDelete.hidden = true;
     formError.hidden = true;
     deleteError.hidden = true;
+    
+    // 警告の取り消し
+    hideUsageWarnings();
 
     // フォーム切り替え用
     if (createForm) createForm.hidden = true;
@@ -203,6 +214,21 @@ function setModalMode (mode, payload = null) {
         if (editCategory) editCategory.value = t.category_value;
         if (editSound) editSound.value = t.sound_value; // ""なら未選択
 
+        // 使用状況を取得して警告表示
+        fetchTimerUsage(t.timer_id)
+          .then((data) => {
+            // 連打対策
+            if (modalState.currentTimer?.timer_id !== t.timer_id) return;
+            const text = buildUsageText(data);
+            if(text){
+              showUsageWarningForMode("update", text, true);
+            }            
+          })
+          .catch(() => {
+            // 失敗時も警告する
+            if (modalState.currentTimer?.timer_id !== t.timer_id) return;
+            showUsageWarningForMode(mode, buildUsageFallbackText(), false); 
+          });
     }
 
     if (mode === "delete-confirm") {
@@ -219,8 +245,23 @@ function setModalMode (mode, payload = null) {
         if (tpl && t?.timer_id) {
             deleteForm.action = tpl.replace("0", t.timer_id);
         }
-    }
 
+        // 使用状況を取得して警告表示
+        fetchTimerUsage(t.timer_id)
+          .then((data) => {
+            // 連打対策
+            if (modalState.currentTimer?.timer_id !== t.timer_id) return;
+            const text = buildUsageText(data);
+            if(text){
+              showUsageWarningForMode("delete-confirm", text, true);
+            }            
+          })
+          .catch(() => {
+            if (modalState.currentTimer?.timer_id !== t.timer_id) return;
+            showUsageWarningForMode(mode, buildUsageFallbackText(), false); 
+          });
+    }
+    // モーダル表示
     modal.hidden = false;
 }
 
@@ -242,6 +283,78 @@ function handleTimerClick(e) {
   // それ以外は編集
   setModalMode("update", timerObj);
 }
+
+// 前回のfetch通信をキャンセルするための変数（下の関数で使う）
+let usageAbort = null;
+
+// タイマーの使用状況を取得する関数
+async function fetchTimerUsage(timerId) {
+  // モックテスト用ここから
+  const useMock = new URLSearchParams(location.search).get("mock") === "1";
+  if (useMock) {
+  if (usageAbort) usageAbort.abort();
+  usageAbort = new AbortController();
+
+  const res = await fetch(`/timers/${timerId}/usage/`, {
+    method: "GET",
+    credentials: "same-origin",
+    headers: { "Accept": "application/json" },
+    signal: usageAbort.signal,
+  });
+  if (!res.ok) throw new Error("usage fetch failed");
+  return await res.json();
+}
+
+// 取得した使用状況から警告textを作成する関数
+function buildUsageText(data) {
+  const used = Number(data.used_count || 0);
+  if (used <= 0) return "";
+
+  const names = Array.isArray(data.program_names) ? data.program_names : [];
+  const remain = Number(data.remain_count || 0);
+
+  const line1 = `このタイマーは ${used} 件のプログラムで使用中です。`;
+  const line2 = `使用中：${names.join(" / ")}${remain > 0 ? `（ほか${remain}件）` : ""}`;
+  const line3 = `変更・削除は使用中のずべてのプログラムに適用されます。`
+  return `${line1}\n${line2}\n${line3}`;
+}
+
+//　警告を隠す関数 
+function hideUsageWarnings(){
+  [usageWarningEdit, usageWarningDelete].forEach(el=>{
+    if(!el) return;
+    el.hidden = true;
+    el.textContent = "";
+    el.classList.remove("usage-warning--danger"); // ★ここ
+  });
+}
+
+// モードによって挿入するモーダルを見分ける関数
+function showUsageWarningForMode(mode, text, isDanger=false){
+  hideUsageWarnings();
+  if (!text) return;
+
+  let el = null;
+  if (mode === "update") el = usageWarningEdit;
+  if (mode === "delete-confirm") el = usageWarningDelete;
+  if (!el) return;
+
+  el.textContent = text;
+  el.hidden = false;
+
+  // ★ 色切替
+  if (isDanger){
+    el.classList.add("usage-warning--danger");
+  }else{
+    el.classList.remove("usage-warning--danger");
+  }
+}
+
+// 使用中のタイマーの取得を失敗した時のテキスト
+function buildUsageFallbackText(){
+  return `このタイマーはプログラムで使用されている可能性があります。\n変更・削除は使用中の全てのプログラムに適用されます。`;
+}
+
 
 // 6.サウンド系の関数
 // サウンドのファイルパスを取得する関数
@@ -331,6 +444,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // タイマーが0件の時に「タイマーが登録されていません」を出す
     ensureEmptyMessage(focusTimerList);
     ensureEmptyMessage(otherTimerList);
+
+    // デバッグ用
+    console.log("usageWarningEdit", usageWarningEdit);
+    console.log("usageWarningDelete", usageWarningDelete);
 });
 
 // サウンドのセレクトを変更した時に音を鳴らす処理
