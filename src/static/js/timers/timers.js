@@ -213,18 +213,23 @@ function setModalMode (mode, payload = null) {
         if (editDuration) editDuration.value = secToMin(t.duration_sec);
         if (editCategory) editCategory.value = t.category_value;
         if (editSound) editSound.value = t.sound_value; // ""なら未選択
-
+        // モードチェック用
+        const reqMode = mode;
         // 使用状況を取得して警告表示
         fetchTimerUsage(t.timer_id)
           .then((data) => {
+            // モードチェック
+            if (modalState.mode !== reqMode) return;
             // 連打対策
             if (modalState.currentTimer?.timer_id !== t.timer_id) return;
             const text = buildUsageText(data);
             if(text){
-              showUsageWarningForMode("update", text, true);
+              showUsageWarningForMode(reqMode, text, true);
             }            
           })
           .catch(() => {
+            // モードチェック
+            if (modalState.mode !== reqMode) return;
             // 失敗時も警告する
             if (modalState.currentTimer?.timer_id !== t.timer_id) return;
             showUsageWarningForMode(mode, buildUsageFallbackText(), false); 
@@ -245,18 +250,24 @@ function setModalMode (mode, payload = null) {
         if (tpl && t?.timer_id) {
             deleteForm.action = tpl.replace("0", t.timer_id);
         }
-
+        // モードチェック用
+        const reqMode = mode;
         // 使用状況を取得して警告表示
         fetchTimerUsage(t.timer_id)
           .then((data) => {
+            // モードチェック
+            if (modalState.mode !== reqMode) return;
             // 連打対策
             if (modalState.currentTimer?.timer_id !== t.timer_id) return;
             const text = buildUsageText(data);
             if(text){
-              showUsageWarningForMode("delete-confirm", text, true);
+              showUsageWarningForMode(mode, text, true);
             }            
           })
           .catch(() => {
+            // モードチェック
+            if (modalState.mode !== reqMode) return;
+            // 失敗時も警告する
             if (modalState.currentTimer?.timer_id !== t.timer_id) return;
             showUsageWarningForMode(mode, buildUsageFallbackText(), false); 
           });
@@ -315,7 +326,7 @@ function buildUsageText(data) {
 
   const line1 = `このタイマーは ${used} 件のプログラムで使用中です。`;
   const line2 = `使用中：${names.join(" / ")}${remain > 0 ? `（ほか${remain}件）` : ""}`;
-  const line3 = `変更・削除は使用中のずべてのプログラムに適用されます。`
+  const line3 = `変更・削除は使用中の全てのプログラムに適用されます。`
   return `${line1}\n${line2}\n${line3}`;
 }
 
