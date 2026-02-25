@@ -300,9 +300,6 @@ let usageAbort = null;
 
 // タイマーの使用状況を取得する関数
 async function fetchTimerUsage(timerId) {
-  // モックテスト用ここから
-  const useMock = new URLSearchParams(location.search).get("mock") === "1";
-  if (useMock) {
   if (usageAbort) usageAbort.abort();
   usageAbort = new AbortController();
 
@@ -455,10 +452,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // タイマーが0件の時に「タイマーが登録されていません」を出す
     ensureEmptyMessage(focusTimerList);
     ensureEmptyMessage(otherTimerList);
-
-    // デバッグ用
-    console.log("usageWarningEdit", usageWarningEdit);
-    console.log("usageWarningDelete", usageWarningDelete);
 });
 
 // サウンドのセレクトを変更した時に音を鳴らす処理
