@@ -71,12 +71,12 @@ def _build_daily_report_text(timer_runs: list[TimerRun], r: Range) -> str:
         # 終了時刻の決定（statusに応じて安全に）
         if ended_at:
             end_dt = ended_at
-        elif status == TimerRun.Status.PAUSED:
+        elif status in (TimerRun.Status.PAUSED, TimerRun.Status.INTERRUPTED):
             end_dt = paused_at or updated_at or timezone.now()
         elif status == TimerRun.Status.RUNNING:
             end_dt = None # “今”にしたくないなら None にして --:-- にできる
         else:
-            end_dt = updated_at or paused_at or timezone.now()
+            end_dt =paused_at or updated_at or timezone.now()
 
         end_str = _to_hhmm(end_dt)
 
