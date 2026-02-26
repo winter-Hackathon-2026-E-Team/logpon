@@ -450,7 +450,7 @@ async function postPause(timerRunId, elapsedSec) {
 // 次のタイマー（タイマー完了/Skip）をサーバへ報告する関数
 async function postSkipOrNext(kind,{finishedTimerRunId, elapsedSec, nextTimerRunId}) {
   const url = kind === "skip" ? buildUrl(skipUrlTemplate) : buildUrl(nextUrlTemplate);
-  if (!url) return;
+  if (!url) return null;
 
   try {
     const res = await fetch(url, {
@@ -468,57 +468,115 @@ async function postSkipOrNext(kind,{finishedTimerRunId, elapsedSec, nextTimerRun
       }),
     });
     if (!res.ok) throw new Error(`${kind} failed: ${res.status}`);
+    return await res.json()
   } catch (e){
     console.error(e?.message || e);
+    return null;
   }
 }
 
-// 1つのタイマーが終わったら次のタイマーに進む関数
+// 1つのタイマーが終わったら次のタイマーに進む関数（サーバ同期版：nextレスポンス対応）
 async function finishCurrentAndMoveNext() {
   if (isAdvancing) return;
   isAdvancing = true;
 
   try {
     const current = getCurrentTimerRun();
-    if(!current) return;
+    if (!current) return;
 
-    // 終了音を鳴らす
+    // 終了音を鳴らす（UX）
     playFinishSoundForTimerRun(current);
 
-    // currentの状態を変更
-    current.status = "finished";
-    current.elapsed_sec = current.duration_sec_snapshot;
-
+    // 次の候補ID
     const next = findNextPendingAfterCurrent();
-    const nextId = next? next.id : null;
+    const nextId = next ? next.id : null;
 
-    // サーバへ通知
-    await postSkipOrNext("next", {
+    // サーバへ通知（レスポンスを受け取る）
+    const resp = await postSkipOrNext("next", {
       finishedTimerRunId: current.id,
-      elapsedSec: current.elapsed_sec,
+      elapsedSec: current.duration_sec_snapshot, // 終了なので満了で送るのが自然
       nextTimerRunId: nextId,
     });
 
-    if (!next) {
-      stopCompletely();
-      // スキップ後に再開できないようにstateの値を削除
-      state.currentTimerRunId = null;
-      state.remainingSec = null;
+    // レスポンスが無い場合のフォールバック（最低限）
+    if (!resp?.runs_data) {
+      // 旧ロジックで進める（ただし不整合は起き得る）
+      current.status = "finished";
+      current.elapsed_sec = current.duration_sec_snapshot;
+
+      if (!next) {
+        stopCompletely();
+        state.currentTimerRunId = null;
+        state.remainingSec = null;
+      } else {
+        state.currentTimerRunId = next.id;
+        next.status = "running";
+        state.isRunning = true;
+        if (!state.intervalId) state.intervalId = setInterval(tick, 1000);
+        state.lastTickAtMs = Date.now();
+        state.remainingSec = Math.max(0, next.duration_sec_snapshot - next.elapsed_sec);
+      }
 
       renderTimerList();
       renderCurrentTimerFace();
+      updateTimerCircle();
       syncPlayIcon();
       return;
     }
 
-    state.currentTimerRunId = next.id,
-    next.status = "running"
-    // スタートの基準時間を設定
-    state.lastTickAtMs = Date.now();
-    state.remainingSec = Math.max(0, next.duration_sec_snapshot - next.elapsed_sec);
+    const { program_run, finished_timer, next_timer } = resp.runs_data;
 
+    // 1) finished_timer を state.timer_runs に反映
+    if (finished_timer) {
+      const f = state.timer_runs.find(x => x.id === finished_timer.id);
+      if (f) {
+        f.status = finished_timer.status; // "finished"
+        // ended_at を使うなら保存（使わないなら不要）
+        // f.ended_at = finished_timer.ended_at;
+        f.elapsed_sec = f.duration_sec_snapshot; // 見た目/整合のため満了に寄せる
+      }
+    }
+
+    // 2) next_timer を反映
+    if (next_timer) {
+      const n = state.timer_runs.find(x => x.id === next_timer.id);
+      if (n) {
+        n.status = next_timer.status; // "running" or "paused"
+        // started_at を使うなら保存（使わないなら不要）
+        // n.started_at = next_timer.started_at;
+      }
+    }
+
+    // 3) current を next に移す（サーバの next_timer を正にする）
+    if (next_timer) {
+      state.currentTimerRunId = next_timer.id;
+      const n = state.timer_runs.find(x => x.id === next_timer.id);
+      state.remainingSec = Math.max(0, n.duration_sec_snapshot - n.elapsed_sec);
+      state.lastTickAtMs = Date.now();
+    } else {
+      // next が無い＝プログラム終了
+      stopCompletely();
+      state.currentTimerRunId = null;
+      state.remainingSec = null;
+    }
+
+    // 4) program_run.status に合わせてフロントの実行状態を揃える
+    if (program_run?.status === "running") {
+      state.isRunning = true;
+      if (!state.intervalId) state.intervalId = setInterval(tick, 1000);
+    } else {
+      state.isRunning = false;
+      if (state.intervalId) {
+        clearInterval(state.intervalId);
+        state.intervalId = null;
+      }
+    }
+
+    // 5) UI同期（★runningでもpausedでも必ず）
     renderTimerList();
     renderCurrentTimerFace();
+    updateTimerCircle();
+    syncPlayIcon();
 
   } finally {
     isAdvancing = false;
@@ -527,6 +585,7 @@ async function finishCurrentAndMoveNext() {
 
 // スキップした時に次のタイマーに進む関数
 async function skipCurrentTimer() {
+  // 連打防止フラグ
   if (isAdvancing) return;
   isAdvancing = true;
 
@@ -539,32 +598,59 @@ async function skipCurrentTimer() {
     const next = findNextPendingAfterCurrent();
     const nextId = next ? next.id : null;
 
-    await postSkipOrNext("skip", {
+    const resp = await postSkipOrNext("skip", {
       finishedTimerRunId: current.id,
       elapsedSec: current.elapsed_sec,
       nextTimerRunId: nextId,
     });
 
-    if (!next) {
-      stopCompletely();
-      // スキップ後に再開できないようにstateの値を削除
-      state.currentTimerRunId = null;
-      state.remainingSec = null;
+    if (resp?.runs_data) {
+      const {program_run, skipped_timer, next_timer} = resp.runs_data;
+
+      // stateのskipされたタイマーにバックエンドから返されたstateを反映
+      if (skipped_timer) {
+        const s = state.timer_runs.find(x => x.id === skipped_timer.id);
+        if (s) s.status = skipped_timer.status;
+      }
+
+      // stateの次のタイマーにバックエンドから返されたstateを反映
+      if (next_timer) {
+        const n = state.timer_runs.find(x => x.id === next_timer.id);
+        if (n) {
+          n.status = next_timer.status;
+        }
+      }
+
+      // 現在タイマーをnextに移す
+      if (next_timer) {
+        state.currentTimerRunId = next_timer.id;
+        const n = state.timer_runs.find(x => x.id === next_timer.id);
+        state.remainingSec = Math.max(0, n.duration_sec_snapshot - n.elapsed_sec);
+        state.lastTickAtMs = Date.now();
+      } else {
+        stopCompletely();
+        state.currentTimerRunId = null;
+        state.remainingSec = null;
+      }
+
+      // program_run.statusと同期してフロントの状態を揃える
+      if (program_run?.status === "running") {
+        state.isRunning = true;
+        if (!state.intervalId) state.intervalId = setInterval(tick, 1000);
+      } else {
+        state.isRunning = false;
+        if (state.intervalId) {
+          clearInterval(state.intervalId);
+          state.intervalId = null;
+        }
+      }
 
       renderTimerList();
       renderCurrentTimerFace();
+      updateTimerCircle();
       syncPlayIcon();
-      return;
+        return;
     }
-
-    state.currentTimerRunId = next.id;
-    next.status = "running";
-    // 基準時間を設定
-    state.lastTickAtMs = Date.now();
-    state.remainingSec = Math.max(0, next.duration_sec_snapshot - next.elapsed_sec);
-
-    renderTimerList();
-    renderCurrentTimerFace();  
   } finally {
     isAdvancing = false;
   }
