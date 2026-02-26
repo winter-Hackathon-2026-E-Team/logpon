@@ -26,13 +26,12 @@ class ProgramRunsView(LoginRequiredMixin, View):
             program_id = body.get('program_id')
             user = request.user
 
-            if not ProgramRun.objects.filter(program_id=program_id, user=user).exists():
-                program = Program.objects.filter(id=program_id, user=user).first()
-                if program is None:
-                    return JsonResponse({'error': 'invalid program'}, status=400)
-                create_runs_draft(user=user, program=program)
+            program = Program.objects.filter(id=program_id, user=user).first()
+            if program is None:
+                return JsonResponse({'error': 'invalid program'}, status=400)
+            create_runs_draft(user=user, program=program)
 
-            id_dict = ProgramRun.objects.filter(program_id=program_id).values('id').first()
+            id_dict = ProgramRun.objects.filter(program_id=program_id).order_by('-updated_at').values('id').first()
             program_run_id = id_dict.get('id')
             url = reverse('runs:program-runs-detail', kwargs={'program_run_id': program_run_id})
             return JsonResponse({'redirect_url': url})

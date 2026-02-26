@@ -4,16 +4,46 @@ import os
 DEBUG = False
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
-# ========== セキュリティ設定 ==========
-# 一時的に無効化（ALB -> Nginxの接続がHTTPのため）
-SECURE_SSL_REDIRECT = False  # ← 変更
-SESSION_COOKIE_SECURE = False  # ← 変更
-CSRF_COOKIE_SECURE = False  # ← 変更
+# ========================================
+# プロキシ設定（重要！）
+# ========================================
 
-SECURE_HSTS_SECONDS = 0  # ← 変更
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False  # ← 変更
-SECURE_HSTS_PRELOAD = False  # ← 変更
+# ALBのX-Forwarded-Protoヘッダーを信頼
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# ========================================
+# CSRF設定
+# ========================================
+
+CSRF_TRUSTED_ORIGINS = [
+            'https://logpon.com',
+                'https://*.logpon.com',
+                ]
+
+CSRF_COOKIE_NAME = 'logpon_csrftoken'
+CSRF_COOKIE_AGE = 31536000
+CSRF_COOKIE_SECURE = True  # ← これが使えるようになる
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# ========================================
+# セッション設定
+# ========================================
+
+SESSION_COOKIE_AGE = 1209600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_NAME = 'logpon_sessionid'
+SESSION_COOKIE_SECURE = True  # ← これも使えるようになる
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# ========================================
+# その他のセキュリティ設定
+# ========================================
+
+SECURE_SSL_REDIRECT = False  # ALBでリダイレクト済み
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
