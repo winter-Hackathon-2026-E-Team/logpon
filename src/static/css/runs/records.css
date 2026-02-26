@@ -1,11 +1,22 @@
+.page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+main {
+  overflow: hidden;
+}
+
 /* 後でprogram-runsのexecute-pageと統一する */
 .records-page {
     display: flex;
     flex-direction: column;
     width: min(1200px, 100%);
     margin: 0 auto;
-    padding: 0 10px;
-    height: 100%;
+    padding: 0 10px 20px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .upper-disp { 
@@ -49,7 +60,16 @@
     display: flex; 
     gap: 13px;
     width: 100%;
-    flex: 1 1 auto;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.left-disp, .right-disp {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .left-disp {
@@ -69,19 +89,18 @@
     gap: 13px;
     border: 1px solid var(--color-frame);
     padding: 13px 10px;
-    margin-bottom: 20px;
-    flex: 1 1 auto;
-    height: 600px;
+    flex:1;
+    min-height: 0;
     overflow: auto;
 }
 
 .recordedCard {
-    height: 53px;
     padding: 0 20px;
     box-sizing: border-box;
     border: 1px solid var(--color-frame);
     box-shadow: 2px 2px 4px var(--color-frame);
     background: var(--color-bg);
+    height: 53px;
 }
 
 .recordedProgram {
@@ -121,6 +140,7 @@
     display: grid;
     width:100%;
     grid-template-columns: 120px 1fr 100px 1fr;
+    grid-template-rows: 53px;
     justify-items: start;
     align-items: center;
     gap: 10px;
