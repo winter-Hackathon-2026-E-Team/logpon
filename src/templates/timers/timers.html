@@ -101,6 +101,10 @@
             <section id="createUpdateContent" class="modal-section">
                 <h2 id="timerModalTitle" class="modal-title">タイマー作成</h2>
 
+                <div id="usageWarningEdit" class="usage-warning" hidden>
+                <p id="usageTextEdit" class="usage-text">警告</p>
+                </div>
+
                 <!-- 作成用フォーム -->
                 <form id="createForm" method="post" action="{% url 'timers:list' %}">
                     {% csrf_token %}
@@ -169,6 +173,10 @@
             <!-- 削除用 -->
             <section id="deleteContent" class="modal-section" hidden>
                 <h2 id="timerDeleteModalTitle" class="modal-title">タイマー削除</h2>
+                <div id="usageWarningDelete" class="usage-warning" hidden>
+                    <p id="usageTextDelete" class="usage-text">警告</p>
+                </div>
+
                 <!-- 削除前の確認用表示 -->
                 <div id="beforeDelete" hidden>
                     <p class="delete-description">このタイマーを削除します。</p>

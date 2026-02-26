@@ -715,13 +715,13 @@ function sendInterruptBestEffort(reason = "") {
   const body = JSON.stringify(payload);
 
   // sendBeaconの処理
-  try {
-    if (navigator.sendBeacon) {
-      const blob = new Blob([body],{ type: "application/json" });
-      const ok = navigator.sendBeacon(url, blob);
-      if (ok) return;
-    }
-  } catch {}
+  // try {
+  //   if (navigator.sendBeacon) {
+  //     const blob = new Blob([body],{ type: "application/json" });
+  //     const ok = navigator.sendBeacon(url, blob);
+  //     if (ok) return;
+  //   }
+  // } catch {}
 
   // keepalive fetch
   try {
