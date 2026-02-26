@@ -1,7 +1,7 @@
 {% if user.is_authenticated %}
     <li>
-        <a class="{% if request.resolver_match.url_name == 'program-runs' %}is-active{% endif %}" 
-        href="{% url 'runs:program-runs' %}">プログラム<br>実行</a>
+        <a class="{% if request.resolver_match.url_name in 'program-runs' or request.resolver_match.url_name == 'program-runs-detail' %}
+        is-active{% endif %}" href="{% url 'runs:program-runs' %}">プログラム<br>実行</a>
     </li>
     <li>
         <!-- programsのurls.pyができたらhrefの中を入れる -->

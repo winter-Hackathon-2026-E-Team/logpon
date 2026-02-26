@@ -152,3 +152,14 @@ form label {
     text-align: center;
     color: var(--color-text-muted);
 }
+
+.usage-warning {
+    text-align: center;
+    white-space: pre-line;
+    font-size: 0.75rem;
+}
+
+.usage-warning--danger {
+    color: var(--color-warning);
+    font-size: 0.875rem;
+}

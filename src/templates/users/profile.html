@@ -46,7 +46,7 @@
 
                 <!-- 編集モード（form） -->
                 <form class="edit-row__edit {% if not open %}is-hidden{% endif %}" 
-                 data-editForm method="post" action="{% url 'users:profile-email' %}">
+                 data-editForm method="post" action="{% url 'users:profile-email' user.id %}">
                 {% csrf_token %}
                     <input type="email" name="email"
                     value="{{ email_form.email.value|default_if_none:request.user.email }}"
@@ -82,7 +82,7 @@
 
                 <!-- 編集モード（form） -->
                 <form class="edit-row__edit {% if not open %}is-hidden{% endif %}"
-                 data-editForm method="post" action="{% url 'users:profile-username' %}">
+                 data-editForm method="post" action="{% url 'users:profile-username' user.id %}">
                 {% csrf_token %}
                     <input type="text" name="username"
                      value="{{ username_form.username.value|default_if_none:request.user.username }}"
@@ -114,7 +114,7 @@
                 「パスワード変更」ボタンをクリックしてください。
             </p>
 
-            <form class="pw-form" method="post" action="{% url 'users:profile-password' %}">
+            <form class="pw-form" method="post" action="{% url 'users:profile-password' user.id %}">
                 {% csrf_token %}
                 <!-- 現在のパスワード -->
                 <div class="pw-field">
@@ -123,7 +123,7 @@
                     <div class="pw-input-wrap">
                         <input id="id_current_password" 
                          class="auth-form {% if password_form.current_password.errors %}is-error{% endif %}"
-                         type="password" name="current_password" autocomplete="current-password" data-pw>
+                         type="password" name="old_password" autocomplete="current-password" data-pw>
                         <button type="button" class="pw-toggle" aria-label="パスワードを表示" data-toggle>
                             <iconify-icon icon="uil:eye" class="pwToggleIcon"></iconify-icon>
                         </button>

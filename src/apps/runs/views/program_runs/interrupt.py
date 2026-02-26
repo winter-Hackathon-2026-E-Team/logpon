@@ -1,5 +1,7 @@
 # プログラムのinterrupt（中断）（POST）
 import json
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
@@ -8,6 +10,7 @@ from ...selectors.program_runs import selector_interrupt_programRun_timerRun
 from ...services.program_runs.lifecycle import status_interrupt
 from ...serializers.program_runs import serialize_interrupt_runs
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ProgramInterruptView(LoginRequiredMixin, View):
     def post(self, request, program_run_id):
         if not request.body:

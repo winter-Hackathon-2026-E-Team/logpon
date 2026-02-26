@@ -16,6 +16,7 @@
         <link rel="icon" href="{% static '/img/logpon_favicon.ico' %}">
         {% block page_css %}{% endblock %}
         <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" defer></script>
+        <script src="{% static 'js/common/base.js' %}" defer></script>
     </head>
     <body>
         <div class="page">
@@ -56,16 +57,6 @@
             </header>
 
             <main>
-                <!-- メッセージ表示（テスト用） -->
-                {% if messages %}
-                    <ul>
-                        {% for message in messages %}
-                            <li>
-                                {{ message }}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
                 {% block content %}{% endblock %}
             </main>
             
@@ -75,5 +66,19 @@
                 </div>
             </footer>
         </div>
+        {% if messages %}
+        <script>
+            window.__DJANGO_MESSAGES__ = [
+                {% for message in messages %}
+                    {
+                        level: "{{ message.tags }}",
+                        text: "{{ message|escapejs }}"
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        </script>
+        {% endif %}
+        
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </body>
 </html>
