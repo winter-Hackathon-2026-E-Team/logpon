@@ -20,7 +20,7 @@ CSRF_TRUSTED_ORIGINS = [
                 'https://*.logpon.com',
                 ]
 
-CSRF_COOKIE_NAME = 'logpon_csrftoken'
+CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_AGE = 31536000
 CSRF_COOKIE_SECURE = True  # ← これが使えるようになる
 CSRF_COOKIE_HTTPONLY = False
@@ -102,5 +102,5 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_NAME = 'logpon_sessionid'
 
 # ========== CSRF設定 ==========
-CSRF_COOKIE_NAME = 'logpon_csrftoken'
+CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_COOKIE_AGE = 31536000
